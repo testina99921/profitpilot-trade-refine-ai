@@ -1,0 +1,136 @@
+
+import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+import Button from './Button';
+import { ArrowDown, Upload } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+const Navbar = () => {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 20;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [scrolled]);
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  return (
+    <header
+      className={cn(
+        'fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300',
+        scrolled ? 'py-3 bg-white/80 backdrop-blur-lg shadow-sm' : 'py-5 bg-transparent'
+      )}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+        <Link to="/" className="flex items-center">
+          <div className="font-bold text-2xl text-charcoal-900">
+            Profit<span className="text-purple-500">Pilot</span>
+          </div>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center space-x-8">
+          <a href="#features" className="text-charcoal-800 hover:text-purple-500 transition-colors">
+            Features
+          </a>
+          <a href="#how-it-works" className="text-charcoal-800 hover:text-purple-500 transition-colors">
+            How It Works
+          </a>
+          <a href="#pricing" className="text-charcoal-800 hover:text-purple-500 transition-colors">
+            Pricing
+          </a>
+          <a href="#faq" className="text-charcoal-800 hover:text-purple-500 transition-colors">
+            FAQ
+          </a>
+        </nav>
+
+        <div className="hidden md:flex items-center space-x-4">
+          <Button variant="outline" size="sm">
+            Log In
+          </Button>
+          <Button size="sm" glow>
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Trades
+          </Button>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900"
+          onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
+        >
+          <div className="space-y-1.5">
+            <span className={cn(
+              "block w-6 h-0.5 bg-current transition-all duration-300",
+              mobileMenuOpen && "rotate-45 translate-y-2"
+            )} />
+            <span className={cn(
+              "block w-6 h-0.5 bg-current transition-all duration-300",
+              mobileMenuOpen && "opacity-0"
+            )} />
+            <span className={cn(
+              "block w-6 h-0.5 bg-current transition-all duration-300",
+              mobileMenuOpen && "-rotate-45 -translate-y-2"
+            )} />
+          </div>
+        </button>
+
+        {/* Mobile Menu */}
+        <div
+          className={cn(
+            "fixed top-[70px] right-0 bottom-0 z-40 w-[75%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out md:hidden",
+            mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          )}
+        >
+          <div className="flex flex-col h-full py-8 px-6">
+            <nav className="flex flex-col space-y-6 mb-8">
+              <a href="#features" className="text-lg font-medium text-charcoal-800 hover:text-purple-500" onClick={toggleMobileMenu}>
+                Features
+              </a>
+              <a href="#how-it-works" className="text-lg font-medium text-charcoal-800 hover:text-purple-500" onClick={toggleMobileMenu}>
+                How It Works
+              </a>
+              <a href="#pricing" className="text-lg font-medium text-charcoal-800 hover:text-purple-500" onClick={toggleMobileMenu}>
+                Pricing
+              </a>
+              <a href="#faq" className="text-lg font-medium text-charcoal-800 hover:text-purple-500" onClick={toggleMobileMenu}>
+                FAQ
+              </a>
+            </nav>
+            <div className="mt-auto flex flex-col space-y-4">
+              <Button variant="outline" fullWidth>
+                Log In
+              </Button>
+              <Button glow fullWidth>
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Trades
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Overlay */}
+        {mobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm md:hidden z-30"
+            onClick={toggleMobileMenu}
+          />
+        )}
+      </div>
+    </header>
+  );
+};
+
+export default Navbar;

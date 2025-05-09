@@ -1,0 +1,130 @@
+
+import { Check } from "lucide-react";
+import Button from "./Button";
+import { cn } from "@/lib/utils";
+
+const PricingPlans = () => {
+  const plans = [
+    {
+      name: "Free",
+      price: "0",
+      description: "Basic AI analysis for casual traders",
+      features: [
+        "5 trade reviews per month",
+        "Basic performance feedback",
+        "Trading style identification",
+        "7-day data history",
+        "Email support"
+      ],
+      buttonText: "Get Started",
+      popular: false
+    },
+    {
+      name: "Pro",
+      price: "20",
+      description: "Advanced insights for serious traders",
+      features: [
+        "200 trade reviews per month",
+        "AI trade optimization insights",
+        "Risk pattern detection",
+        "30-day data history",
+        "Entry/exit timing analysis",
+        "Priority email support"
+      ],
+      buttonText: "Start Pro Trial",
+      popular: true
+    },
+    {
+      name: "Advanced",
+      price: "50",
+      description: "Comprehensive analytics for professionals",
+      features: [
+        "1000 trade reviews per month",
+        "Risk exposure mapping",
+        "Alternative trade simulations",
+        "90-day data history",
+        "Custom strategy development",
+        "Priority chat support"
+      ],
+      buttonText: "Choose Advanced",
+      popular: false
+    },
+    {
+      name: "Elite",
+      price: "100",
+      description: "Full suite for professional traders",
+      features: [
+        "Unlimited trade reviews",
+        "Trading style coaching",
+        "Real-time AI alerts",
+        "Unlimited data history",
+        "1-on-1 analyst consultation",
+        "24/7 priority support"
+      ],
+      buttonText: "Contact Sales",
+      popular: false
+    }
+  ];
+
+  return (
+    <section id="pricing" className="py-24 bg-white">
+      <div className="section-container">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Transparent Pricing Plans</h2>
+          <p className="text-lg text-charcoal-600">
+            Choose the plan that best fits your trading needs and scale up as your strategy evolves.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {plans.map((plan, index) => (
+            <div key={index} className="animate-on-scroll" style={{ animationDelay: `${index * 0.1}s` }}>
+              <div 
+                className={cn(
+                  "glass-card h-full flex flex-col p-6",
+                  plan.popular && "border-2 border-purple-500 relative"
+                )}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+                    Recommended
+                  </div>
+                )}
+                
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+                  <div className="flex items-baseline">
+                    <span className="text-4xl font-bold">${plan.price}</span>
+                    <span className="text-charcoal-600 ml-2">/month</span>
+                  </div>
+                  <p className="mt-3 text-charcoal-600">{plan.description}</p>
+                </div>
+                
+                <div className="flex-grow mb-6">
+                  <ul className="space-y-3">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex">
+                        <Check size={18} className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                        <span className="text-charcoal-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <Button 
+                  variant={plan.popular ? "primary" : "outline"} 
+                  glow={plan.popular} 
+                  fullWidth
+                >
+                  {plan.buttonText}
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default PricingPlans;
