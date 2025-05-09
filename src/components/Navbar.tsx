@@ -1,111 +1,156 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Menu } from 'lucide-react';
+import Button from './Button';
+import { Upload } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const isScrolled = window.scrollY > 20;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
+      }
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  
+  }, [scrolled]);
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const scrollToTestimonials = () => {
+    const testimonialsSection = document.getElementById('testimonials');
+    if (testimonialsSection) {
+      testimonialsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <nav 
+    <header
       className={cn(
-        "lunexa-nav transition-all duration-300",
-        isScrolled && "shadow-lg shadow-black/10"
+        'fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300',
+        scrolled ? 'py-3 bg-black/50 backdrop-blur-lg shadow-sm' : 'py-5 bg-transparent'
       )}
     >
-      <div className="container mx-auto flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="font-bold text-2xl text-white">
-          LUNEXA
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+        <Link to="/" className="flex items-center">
+          <div className="font-bold text-2xl text-white">
+            Profit<span className="text-purple-500">Pilot</span>
+          </div>
         </Link>
-        
-        {/* Desktop Nav Links */}
-        <div className="hidden md:flex items-center space-x-1">
-          <Link to="/" className="lunexa-nav-link active">
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center space-x-8">
+          <Link to="/" className="text-white hover:text-purple-400 transition-colors font-inter">
             Home
           </Link>
-          <Link to="/features" className="lunexa-nav-link">
+          <a href="#features" className="text-white hover:text-purple-400 transition-colors font-inter">
             Features
-          </Link>
-          <Link to="/blog" className="lunexa-nav-link">
+          </a>
+          <a href="#how-it-works" className="text-white hover:text-purple-400 transition-colors font-inter">
             How It Works
-          </Link>
-          <Link to="/pricing" className="lunexa-nav-link">
+          </a>
+          <a href="#pricing" className="text-white hover:text-purple-400 transition-colors font-inter">
             Pricing
-          </Link>
-          <Link to="/testimonials" className="lunexa-nav-link">
+          </a>
+          <a href="#testimonials" onClick={scrollToTestimonials} className="text-white hover:text-purple-400 transition-colors font-inter">
             Testimonials
-          </Link>
-          <Link to="/faq" className="lunexa-nav-link">
+          </a>
+          <a href="#faq" className="text-white hover:text-purple-400 transition-colors font-inter">
             FAQ
-          </Link>
-        </div>
-        
-        {/* CTA Buttons */}
+          </a>
+        </nav>
+
         <div className="hidden md:flex items-center space-x-4">
-          <Link to="/login" className="lunexa-btn text-sm font-medium text-white/80 hover:text-white">
-            Login
-          </Link>
-          <Link to="/dashboard" className="lunexa-btn lunexa-btn-primary">
-            Get Started
-          </Link>
+          <Button variant="outline" size="sm">
+            Log In
+          </Button>
+          <Button size="sm" glow>
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Trades
+          </Button>
         </div>
-        
+
         {/* Mobile Menu Button */}
-        <button 
-          className="md:hidden p-2 text-white focus:outline-none"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        <button
+          className="md:hidden p-2 rounded-md text-gray-300 hover:text-white"
+          onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
         >
-          <Menu size={24} />
+          <div className="space-y-1.5">
+            <span className={cn(
+              "block w-6 h-0.5 bg-current transition-all duration-300",
+              mobileMenuOpen && "rotate-45 translate-y-2"
+            )} />
+            <span className={cn(
+              "block w-6 h-0.5 bg-current transition-all duration-300",
+              mobileMenuOpen && "opacity-0"
+            )} />
+            <span className={cn(
+              "block w-6 h-0.5 bg-current transition-all duration-300",
+              mobileMenuOpen && "-rotate-45 -translate-y-2"
+            )} />
+          </div>
         </button>
-      </div>
-      
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-white/5 shadow-xl">
-          <div className="container mx-auto py-4 px-6 flex flex-col space-y-4">
-            <Link to="/" className="lunexa-nav-link active">
-              Home
-            </Link>
-            <Link to="/features" className="lunexa-nav-link">
-              Features
-            </Link>
-            <Link to="/blog" className="lunexa-nav-link">
-              How It Works
-            </Link>
-            <Link to="/pricing" className="lunexa-nav-link">
-              Pricing
-            </Link>
-            <Link to="/testimonials" className="lunexa-nav-link">
-              Testimonials
-            </Link>
-            <Link to="/faq" className="lunexa-nav-link">
-              FAQ
-            </Link>
-            
-            <div className="pt-3 flex flex-col space-y-3 border-t border-white/5">
-              <Link to="/login" className="lunexa-btn lunexa-btn-outline">
-                Login
+
+        {/* Mobile Menu */}
+        <div
+          className={cn(
+            "fixed top-[70px] right-0 bottom-0 z-40 w-[75%] bg-black/90 shadow-lg transform transition-transform duration-300 ease-in-out md:hidden",
+            mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          )}
+        >
+          <div className="flex flex-col h-full py-8 px-6">
+            <nav className="flex flex-col space-y-6 mb-8">
+              <Link to="/" className="text-lg font-medium text-white hover:text-purple-400" onClick={() => setMobileMenuOpen(false)}>
+                Home
               </Link>
-              <Link to="/dashboard" className="lunexa-btn lunexa-btn-primary">
-                Get Started
-              </Link>
+              <a href="#features" className="text-lg font-medium text-white hover:text-purple-400" onClick={toggleMobileMenu}>
+                Features
+              </a>
+              <a href="#how-it-works" className="text-lg font-medium text-white hover:text-purple-400" onClick={toggleMobileMenu}>
+                How It Works
+              </a>
+              <a href="#pricing" className="text-lg font-medium text-white hover:text-purple-400" onClick={toggleMobileMenu}>
+                Pricing
+              </a>
+              <a href="#testimonials" onClick={scrollToTestimonials} className="text-lg font-medium text-white hover:text-purple-400">
+                Testimonials
+              </a>
+              <a href="#faq" className="text-lg font-medium text-white hover:text-purple-400" onClick={toggleMobileMenu}>
+                FAQ
+              </a>
+            </nav>
+            <div className="mt-auto flex flex-col space-y-4">
+              <Button variant="outline" fullWidth>
+                Log In
+              </Button>
+              <Button glow fullWidth>
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Trades
+              </Button>
             </div>
           </div>
         </div>
-      )}
-    </nav>
+
+        {/* Overlay */}
+        {mobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm md:hidden z-30"
+            onClick={toggleMobileMenu}
+          />
+        )}
+      </div>
+    </header>
   );
 };
 
