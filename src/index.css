@@ -1,38 +1,37 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 260 30% 4%;
+    --background: 265 30% 6%;
     --foreground: 224 71% 98%;
 
-    --card: 260 30% 6%;
+    --card: 265 30% 8%;
     --card-foreground: 224 71% 98%;
 
-    --popover: 260 30% 6%;
+    --popover: 265 30% 8%;
     --popover-foreground: 224 71% 98%;
 
     --primary: 254 76% 73%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 215 27% 47%;
+    --secondary: 260 40% 50%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 260 20% 12%;
+    --muted: 265 20% 15%;
     --muted-foreground: 220 8% 76%;
 
-    --accent: 260 20% 12%;
+    --accent: 265 20% 15%;
     --accent-foreground: 220 7% 92%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 260 20% 15%;
-    --input: 260 20% 15%;
+    --border: 265 20% 18%;
+    --input: 265 20% 18%;
     --ring: 262 83% 58%;
 
     --radius: 0.75rem;
@@ -51,7 +50,9 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
-    background-image: radial-gradient(circle at 50% 50%, rgba(148, 108, 230, 0.08) 0%, rgba(0, 0, 0, 0) 60%),
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    background-image: radial-gradient(circle at 50% 50%, rgba(148, 108, 230, 0.12) 0%, rgba(0, 0, 0, 0) 70%),
                      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%239C92AC' fill-opacity='0.05' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
   }
   
@@ -60,7 +61,7 @@
   }
   
   p {
-    @apply text-muted-foreground font-montserrat;
+    @apply text-muted-foreground font-inter font-light;
   }
 }
 

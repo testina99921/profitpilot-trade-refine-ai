@@ -1,8 +1,29 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  const scrollToSection = (sectionId: string) => {
+    // First navigate to home if not there already
+    if (window.location.pathname !== "/") {
+      navigate("/");
+      // Need to wait a bit for the navigation to complete
+      setTimeout(() => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    } else {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
+
   return (
     <footer className="bg-[#0c0816] text-white py-16 border-t border-purple-900/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -14,7 +35,7 @@ const Footer = () => {
                 Profit<span className="text-purple-400">Pilot</span>
               </div>
             </Link>
-            <p className="text-gray-400 mb-6 font-montserrat">
+            <p className="text-gray-400 mb-6 font-inter font-light">
               AI-powered trade analysis to help you refine your strategy and improve your results.
             </p>
             <div className="flex space-x-4">
@@ -42,11 +63,12 @@ const Footer = () => {
           {/* Quick Links */}
           <div>
             <h3 className="text-lg font-playfair font-semibold mb-6">Quick Links</h3>
-            <ul className="space-y-4 font-montserrat">
-              <li><a href="#features" className="text-gray-400 hover:text-purple-400 transition-colors">Features</a></li>
-              <li><a href="#how-it-works" className="text-gray-400 hover:text-purple-400 transition-colors">How It Works</a></li>
-              <li><a href="#pricing" className="text-gray-400 hover:text-purple-400 transition-colors">Pricing</a></li>
-              <li><a href="#faq" className="text-gray-400 hover:text-purple-400 transition-colors">FAQ</a></li>
+            <ul className="space-y-4 font-inter font-light">
+              <li><a href="#" onClick={() => scrollToSection('features')} className="text-gray-400 hover:text-purple-400 transition-colors">Features</a></li>
+              <li><a href="#" onClick={() => scrollToSection('how-it-works')} className="text-gray-400 hover:text-purple-400 transition-colors">How It Works</a></li>
+              <li><a href="#" onClick={() => scrollToSection('pricing')} className="text-gray-400 hover:text-purple-400 transition-colors">Pricing</a></li>
+              <li><a href="#" onClick={() => scrollToSection('testimonials')} className="text-gray-400 hover:text-purple-400 transition-colors">Testimonials</a></li>
+              <li><a href="#" onClick={() => scrollToSection('faq')} className="text-gray-400 hover:text-purple-400 transition-colors">FAQ</a></li>
               <li><Link to="/blog" className="text-gray-400 hover:text-purple-400 transition-colors">Blog</Link></li>
               <li><Link to="/about" className="text-gray-400 hover:text-purple-400 transition-colors">About Us</Link></li>
             </ul>
@@ -55,7 +77,7 @@ const Footer = () => {
           {/* Legal */}
           <div>
             <h3 className="text-lg font-playfair font-semibold mb-6">Legal</h3>
-            <ul className="space-y-4 font-montserrat">
+            <ul className="space-y-4 font-inter font-light">
               <li><Link to="/terms" className="text-gray-400 hover:text-purple-400 transition-colors">Terms of Service</Link></li>
               <li><Link to="/privacy" className="text-gray-400 hover:text-purple-400 transition-colors">Privacy Policy</Link></li>
               <li><Link to="/cookies" className="text-gray-400 hover:text-purple-400 transition-colors">Cookie Policy</Link></li>
@@ -66,7 +88,7 @@ const Footer = () => {
           {/* Contact */}
           <div>
             <h3 className="text-lg font-playfair font-semibold mb-6">Contact</h3>
-            <ul className="space-y-4 font-montserrat">
+            <ul className="space-y-4 font-inter font-light">
               <li className="text-gray-400">
                 <span className="block">Email:</span>
                 <a href="mailto:support@profitpilot.com" className="text-purple-400 hover:text-purple-300 transition-colors">
@@ -81,7 +103,7 @@ const Footer = () => {
               </li>
               <li className="text-gray-400">
                 <span className="block">Business:</span>
-                <a href="#" className="text-purple-400 hover:text-purple-300 transition-colors">
+                <a href="mailto:partnerships@profitpilot.com" className="text-purple-400 hover:text-purple-300 transition-colors">
                   partnerships@profitpilot.com
                 </a>
               </li>
@@ -90,7 +112,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-800">
-          <p className="text-gray-400 text-sm text-center font-montserrat">
+          <p className="text-gray-400 text-sm text-center font-inter font-light">
             © {new Date().getFullYear()} ProfitPilot. All rights reserved.
             <br />
             ProfitPilot is not a financial advisory service. Trading involves risk.
