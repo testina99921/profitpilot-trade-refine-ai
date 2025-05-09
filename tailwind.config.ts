@@ -105,6 +105,8 @@ export default {
 			fontFamily: {
 				sans: ['Inter var', 'sans-serif'],
 				inter: ['Inter var', 'sans-serif'],
+                playfair: ['Playfair Display', 'serif'],
+                montserrat: ['Montserrat', 'sans-serif']
 			},
 			keyframes: {
 				'accordion-down': {
@@ -150,6 +152,14 @@ export default {
                         opacity: '1',
                         filter: 'blur(0)'
                     }
+                },
+                'scroll': {
+                    '0%': {
+                        transform: 'translateX(0)'
+                    },
+                    '100%': {
+                        transform: 'translateX(-100%)'
+                    }
                 }
 			},
 			animation: {
@@ -157,7 +167,8 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
                 'fade-in-up': 'fade-in-up 0.6s ease-out forwards',
                 'fade-in': 'fade-in 0.4s ease-out forwards',
-                'blur-in': 'blur-in 0.5s ease-out forwards'
+                'blur-in': 'blur-in 0.5s ease-out forwards',
+                'scroll': 'scroll 30s linear infinite',
 			},
             backgroundImage: {
                 'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

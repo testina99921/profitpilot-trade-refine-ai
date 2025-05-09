@@ -30,18 +30,18 @@ const FeaturedIn = () => {
   ];
 
   return (
-    <section className="py-12 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-12 bg-gradient-to-b from-[#120c22] to-background">
       <div className="section-container">
         <div className="text-center mb-8">
-          <h3 className="text-sm uppercase tracking-wider text-charcoal-600 font-medium">Featured In</h3>
+          <h3 className="text-sm uppercase tracking-wider text-gray-400 font-medium font-montserrat">Featured In</h3>
         </div>
         
         <div className="overflow-hidden">
           <div className="flex space-x-12 md:space-x-20 animate-scroll overflow-visible py-4">
-            {publications.map((pub, index) => (
+            {publications.concat(publications).map((pub, index) => (
               <div 
                 key={index} 
-                className="flex-shrink-0 flex items-center justify-center text-charcoal-800/50 transition-opacity hover:text-charcoal-900/70 hover:opacity-100"
+                className="flex-shrink-0 flex items-center justify-center text-gray-400/60 transition-opacity hover:text-gray-300/90 hover:opacity-100"
               >
                 <span className={pub.logoClass}>{pub.name}</span>
               </div>

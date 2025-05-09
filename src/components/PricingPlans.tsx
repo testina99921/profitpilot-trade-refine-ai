@@ -21,7 +21,7 @@ const PricingPlans = () => {
     },
     {
       name: "Pro",
-      price: "20",
+      price: "30",
       description: "Advanced insights for serious traders",
       features: [
         "200 trade reviews per month",
@@ -32,11 +32,12 @@ const PricingPlans = () => {
         "Priority email support"
       ],
       buttonText: "Start Pro Trial",
-      popular: true
+      popular: true,
+      tag: "MOST POPULAR"
     },
     {
       name: "Advanced",
-      price: "50",
+      price: "75",
       description: "Comprehensive analytics for professionals",
       features: [
         "1000 trade reviews per month",
@@ -47,11 +48,12 @@ const PricingPlans = () => {
         "Priority chat support"
       ],
       buttonText: "Choose Advanced",
-      popular: false
+      popular: false,
+      discount: "25% OFF",
     },
     {
       name: "Elite",
-      price: "100",
+      price: "200",
       description: "Full suite for professional traders",
       features: [
         "Unlimited trade reviews",
@@ -59,7 +61,7 @@ const PricingPlans = () => {
         "Real-time AI alerts",
         "Unlimited data history",
         "1-on-1 analyst consultation",
-        "24/7 priority support"
+        "Access to Trading Discord"
       ],
       buttonText: "Contact Sales",
       popular: false
@@ -67,11 +69,11 @@ const PricingPlans = () => {
   ];
 
   return (
-    <section id="pricing" className="py-24 bg-white">
+    <section id="pricing" className="py-24 bg-gradient-to-b from-background to-[#120c22]">
       <div className="section-container">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Transparent Pricing Plans</h2>
-          <p className="text-lg text-charcoal-600">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gradient bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">Transparent Pricing Plans</h2>
+          <p className="text-lg text-gray-300">
             Choose the plan that best fits your trading needs and scale up as your strategy evolves.
           </p>
         </div>
@@ -81,13 +83,19 @@ const PricingPlans = () => {
             <div key={index} className="animate-on-scroll" style={{ animationDelay: `${index * 0.1}s` }}>
               <div 
                 className={cn(
-                  "glass-card h-full flex flex-col p-6",
-                  plan.popular && "border-2 border-purple-500 relative"
+                  "glass-card h-full flex flex-col p-6 relative",
+                  plan.popular && "border-2 border-purple-500"
                 )}
               >
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                    Recommended
+                  <div className="price-tag">
+                    {plan.tag}
+                  </div>
+                )}
+                
+                {plan.discount && (
+                  <div className="discount-tag">
+                    {plan.discount}
                   </div>
                 )}
                 
@@ -95,9 +103,9 @@ const PricingPlans = () => {
                   <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
                   <div className="flex items-baseline">
                     <span className="text-4xl font-bold">${plan.price}</span>
-                    <span className="text-charcoal-600 ml-2">/month</span>
+                    <span className="text-gray-400 ml-2">/month</span>
                   </div>
-                  <p className="mt-3 text-charcoal-600">{plan.description}</p>
+                  <p className="mt-3 text-gray-300">{plan.description}</p>
                 </div>
                 
                 <div className="flex-grow mb-6">
@@ -105,7 +113,7 @@ const PricingPlans = () => {
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex">
                         <Check size={18} className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-charcoal-700">{feature}</span>
+                        <span className="text-gray-300">{feature}</span>
                       </li>
                     ))}
                   </ul>
