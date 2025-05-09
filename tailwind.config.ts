@@ -103,10 +103,11 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				sans: ['Inter var', 'sans-serif'],
+				sans: ['Roboto', 'sans-serif'],
 				inter: ['Inter var', 'sans-serif'],
                 playfair: ['Playfair Display', 'serif'],
-                montserrat: ['Montserrat', 'sans-serif']
+                montserrat: ['Montserrat', 'sans-serif'],
+                roboto: ['Roboto', 'sans-serif']
 			},
 			keyframes: {
 				'accordion-down': {
