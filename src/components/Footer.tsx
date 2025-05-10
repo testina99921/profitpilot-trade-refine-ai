@@ -5,10 +5,13 @@ import { Link, useNavigate } from "react-router-dom";
 const Footer = () => {
   const navigate = useNavigate();
 
+  // Updated scrollToSection to ensure scroll to top behavior
   const scrollToSection = (sectionId: string) => {
     // First navigate to home if not there already
     if (window.location.pathname !== "/") {
       navigate("/");
+      // After navigation, scroll to top first, then to section if needed
+      window.scrollTo(0, 0);
       // Need to wait a bit for the navigation to complete
       setTimeout(() => {
         const section = document.getElementById(sectionId);
@@ -17,43 +20,47 @@ const Footer = () => {
         }
       }, 100);
     } else {
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.scrollIntoView({ behavior: "smooth" });
-      }
+      // If already on home page, scroll to section
+      window.scrollTo(0, 0);
+      setTimeout(() => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 10);
     }
   };
 
   return (
-    <footer className="bg-[#0c0816] text-white py-16 border-t border-purple-900/20">
+    <footer className="bg-[#0c0816] text-white py-10 border-t border-purple-900/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and Mission */}
           <div className="col-span-1 md:col-span-1">
-            <Link to="/" className="inline-block mb-6">
-              <div className="font-inter font-bold text-2xl">
+            <Link to="/" onClick={() => window.scrollTo(0, 0)} className="inline-block mb-4">
+              <div className="font-roboto font-bold text-2xl">
                 Profit<span className="text-purple-400">Pilot</span>
               </div>
             </Link>
-            <p className="text-gray-400 mb-6 font-inter font-light">
+            <p className="text-gray-400 mb-4 font-roboto font-light">
               AI-powered trade analysis to help you refine your strategy and improve your results.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
                 <span className="sr-only">Twitter</span>
-                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.093 4.093 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
                 </svg>
               </a>
               <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
                 <span className="sr-only">LinkedIn</span>
-                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                 </svg>
               </a>
               <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
                 <span className="sr-only">Discord</span>
-                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z" />
                 </svg>
               </a>
@@ -62,33 +69,33 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-inter font-semibold mb-6">Quick Links</h3>
-            <ul className="space-y-4 font-inter font-light">
+            <h3 className="text-lg font-roboto font-medium mb-4">Quick Links</h3>
+            <ul className="space-y-2 font-roboto font-light">
               <li><a href="#" onClick={() => scrollToSection('features')} className="text-gray-400 hover:text-purple-400 transition-colors">Features</a></li>
               <li><a href="#" onClick={() => scrollToSection('how-it-works')} className="text-gray-400 hover:text-purple-400 transition-colors">How It Works</a></li>
               <li><a href="#" onClick={() => scrollToSection('pricing')} className="text-gray-400 hover:text-purple-400 transition-colors">Pricing</a></li>
               <li><a href="#" onClick={() => scrollToSection('testimonials')} className="text-gray-400 hover:text-purple-400 transition-colors">Testimonials</a></li>
               <li><a href="#" onClick={() => scrollToSection('faq')} className="text-gray-400 hover:text-purple-400 transition-colors">FAQ</a></li>
-              <li><Link to="/blog" className="text-gray-400 hover:text-purple-400 transition-colors">Blog</Link></li>
-              <li><Link to="/about" className="text-gray-400 hover:text-purple-400 transition-colors">About Us</Link></li>
+              <li><Link to="/blog" onClick={() => window.scrollTo(0, 0)} className="text-gray-400 hover:text-purple-400 transition-colors">Blog</Link></li>
+              <li><Link to="/about" onClick={() => window.scrollTo(0, 0)} className="text-gray-400 hover:text-purple-400 transition-colors">About Us</Link></li>
             </ul>
           </div>
 
           {/* Legal */}
           <div>
-            <h3 className="text-lg font-inter font-semibold mb-6">Legal</h3>
-            <ul className="space-y-4 font-inter font-light">
-              <li><Link to="/terms" className="text-gray-400 hover:text-purple-400 transition-colors">Terms of Service</Link></li>
-              <li><Link to="/privacy" className="text-gray-400 hover:text-purple-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/cookies" className="text-gray-400 hover:text-purple-400 transition-colors">Cookie Policy</Link></li>
-              <li><Link to="/disclaimer" className="text-gray-400 hover:text-purple-400 transition-colors">Disclaimer</Link></li>
+            <h3 className="text-lg font-roboto font-medium mb-4">Legal</h3>
+            <ul className="space-y-2 font-roboto font-light">
+              <li><Link to="/terms" onClick={() => window.scrollTo(0, 0)} className="text-gray-400 hover:text-purple-400 transition-colors">Terms of Service</Link></li>
+              <li><Link to="/privacy" onClick={() => window.scrollTo(0, 0)} className="text-gray-400 hover:text-purple-400 transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/cookies" onClick={() => window.scrollTo(0, 0)} className="text-gray-400 hover:text-purple-400 transition-colors">Cookie Policy</Link></li>
+              <li><Link to="/disclaimer" onClick={() => window.scrollTo(0, 0)} className="text-gray-400 hover:text-purple-400 transition-colors">Disclaimer</Link></li>
             </ul>
           </div>
 
           {/* Contact - Simplified to just email */}
           <div>
-            <h3 className="text-lg font-inter font-semibold mb-6">Contact</h3>
-            <div className="font-inter font-light">
+            <h3 className="text-lg font-roboto font-medium mb-4">Contact</h3>
+            <div className="font-roboto font-light">
               <a 
                 href="mailto:support@profitpilot.com"
                 className="flex items-center text-purple-400 hover:text-purple-300 transition-colors"
@@ -99,8 +106,8 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <p className="text-gray-400 text-sm text-center font-inter font-light">
+        <div className="mt-8 pt-6 border-t border-gray-800">
+          <p className="text-gray-400 text-sm text-center font-roboto font-light">
             © {new Date().getFullYear()} ProfitPilot. All rights reserved.
             <br />
             ProfitPilot is not a financial advisory service. Trading involves risk.
