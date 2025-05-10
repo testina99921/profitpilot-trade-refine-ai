@@ -36,13 +36,13 @@ const Features = () => {
   ];
 
   return (
-    <section id="features" className="py-24 bg-gray-50">
+    <section id="features" className="py-24 bg-indigo-950/80 border-t border-purple-900/30">
       <div className="section-container">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
             AI-Powered Analysis Features
           </h2>
-          <p className="text-lg text-charcoal-600">
+          <p className="text-lg text-gray-300 font-inter font-light">
             ProfitPilot leverages advanced machine learning to transform your trading data into 
             actionable insights that help you improve your strategy and results.
           </p>
@@ -52,11 +52,11 @@ const Features = () => {
           {features.map((feature, index) => (
             <div key={index} className="animate-on-scroll" style={{ animationDelay: `${index * 0.1}s` }}>
               <div className="glass-card h-full p-6">
-                <div className="bg-purple-100 text-purple-600 w-12 h-12 rounded-lg flex items-center justify-center mb-5">
+                <div className="bg-purple-500/20 text-purple-400 w-12 h-12 rounded-lg flex items-center justify-center mb-5">
                   <feature.icon size={24} />
                 </div>
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-charcoal-600">{feature.description}</p>
+                <h3 className="text-xl font-semibold mb-3 text-white">{feature.title}</h3>
+                <p className="text-gray-300 font-inter font-light">{feature.description}</p>
               </div>
             </div>
           ))}

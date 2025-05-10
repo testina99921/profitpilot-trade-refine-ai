@@ -10,6 +10,7 @@ import FAQ from '@/components/FAQ';
 import Footer from '@/components/Footer';
 import Testimonials from '@/components/Testimonials';
 import ContactSupport from '@/components/ContactSupport';
+import DashboardPreview from '@/components/DashboardPreview';
 
 const Index = () => {
   useEffect(() => {
@@ -45,6 +46,7 @@ const Index = () => {
       <FeaturedIn />
       <Features />
       <HowItWorks />
+      <DashboardPreview />
       <Testimonials />
       <PricingPlans />
       <FAQ />

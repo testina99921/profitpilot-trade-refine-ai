@@ -21,7 +21,7 @@ const ContactSupport = () => {
         <Button 
           size="lg" 
           glow 
-          className="mx-auto opacity-90 hover:opacity-100"
+          className="mx-auto opacity-60 hover:opacity-90"
           onClick={handleContactClick}
         >
           <MessageCircle className="mr-2" />
