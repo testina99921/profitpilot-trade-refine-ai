@@ -42,7 +42,7 @@ const HowItWorks = () => {
                 <div className={cn("w-16 h-16 rounded-full flex items-center justify-center mb-6", step.color)}>
                   <step.icon size={28} />
                 </div>
-                <h3 className="text-xl font-semibold mb-4 text-white">{step.title}</h3>
+                <h3 className="text-xl font-semibold mb-4 text-white font-inter">{step.title}</h3>
                 <p className="text-gray-300 font-inter font-light">{step.description}</p>
               </div>
             </div>

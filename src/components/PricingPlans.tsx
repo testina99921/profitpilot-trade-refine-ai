@@ -69,11 +69,11 @@ const PricingPlans = () => {
   ];
 
   return (
-    <section id="pricing" className="py-24 bg-gradient-to-b from-background to-[#120c22]">
+    <section id="pricing" className="py-24 bg-gradient-to-b from-[#150c2e] to-[#1a0f37]">
       <div className="section-container">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gradient bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">Transparent Pricing Plans</h2>
-          <p className="text-lg text-gray-300">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Transparent Pricing Plans</h2>
+          <p className="text-lg text-gray-300 font-inter font-light">
             Choose the plan that best fits your trading needs and scale up as your strategy evolves.
           </p>
         </div>
@@ -100,12 +100,12 @@ const PricingPlans = () => {
                 )}
                 
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+                  <h3 className="text-xl font-bold mb-2 font-inter">{plan.name}</h3>
                   <div className="flex items-baseline">
-                    <span className="text-4xl font-bold">${plan.price}</span>
-                    <span className="text-gray-400 ml-2">/month</span>
+                    <span className="text-4xl font-bold font-inter">${plan.price}</span>
+                    <span className="text-gray-400 ml-2 font-inter font-light">/month</span>
                   </div>
-                  <p className="mt-3 text-gray-300">{plan.description}</p>
+                  <p className="mt-3 text-gray-300 font-inter font-light">{plan.description}</p>
                 </div>
                 
                 <div className="flex-grow mb-6">
@@ -113,7 +113,7 @@ const PricingPlans = () => {
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex">
                         <Check size={18} className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-gray-300">{feature}</span>
+                        <span className="text-gray-300 font-inter font-light">{feature}</span>
                       </li>
                     ))}
                   </ul>
