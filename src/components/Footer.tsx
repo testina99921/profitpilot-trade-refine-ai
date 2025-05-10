@@ -31,7 +31,7 @@ const Footer = () => {
           {/* Logo and Mission */}
           <div className="col-span-1 md:col-span-1">
             <Link to="/" className="inline-block mb-6">
-              <div className="font-playfair font-bold text-2xl">
+              <div className="font-inter font-bold text-2xl">
                 Profit<span className="text-purple-400">Pilot</span>
               </div>
             </Link>
@@ -62,7 +62,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-playfair font-semibold mb-6">Quick Links</h3>
+            <h3 className="text-lg font-inter font-semibold mb-6">Quick Links</h3>
             <ul className="space-y-4 font-inter font-light">
               <li><a href="#" onClick={() => scrollToSection('features')} className="text-gray-400 hover:text-purple-400 transition-colors">Features</a></li>
               <li><a href="#" onClick={() => scrollToSection('how-it-works')} className="text-gray-400 hover:text-purple-400 transition-colors">How It Works</a></li>
@@ -76,7 +76,7 @@ const Footer = () => {
 
           {/* Legal */}
           <div>
-            <h3 className="text-lg font-playfair font-semibold mb-6">Legal</h3>
+            <h3 className="text-lg font-inter font-semibold mb-6">Legal</h3>
             <ul className="space-y-4 font-inter font-light">
               <li><Link to="/terms" className="text-gray-400 hover:text-purple-400 transition-colors">Terms of Service</Link></li>
               <li><Link to="/privacy" className="text-gray-400 hover:text-purple-400 transition-colors">Privacy Policy</Link></li>
@@ -85,29 +85,17 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Contact - Simplified to just email */}
           <div>
-            <h3 className="text-lg font-playfair font-semibold mb-6">Contact</h3>
-            <ul className="space-y-4 font-inter font-light">
-              <li className="text-gray-400">
-                <span className="block">Email:</span>
-                <a href="mailto:support@profitpilot.com" className="text-purple-400 hover:text-purple-300 transition-colors">
-                  support@profitpilot.com
-                </a>
-              </li>
-              <li className="text-gray-400">
-                <span className="block">Support:</span>
-                <a href="#" className="text-purple-400 hover:text-purple-300 transition-colors">
-                  Help Center
-                </a>
-              </li>
-              <li className="text-gray-400">
-                <span className="block">Business:</span>
-                <a href="mailto:partnerships@profitpilot.com" className="text-purple-400 hover:text-purple-300 transition-colors">
-                  partnerships@profitpilot.com
-                </a>
-              </li>
-            </ul>
+            <h3 className="text-lg font-inter font-semibold mb-6">Contact</h3>
+            <div className="font-inter font-light">
+              <a 
+                href="mailto:support@profitpilot.com"
+                className="flex items-center text-purple-400 hover:text-purple-300 transition-colors"
+              >
+                support@profitpilot.com
+              </a>
+            </div>
           </div>
         </div>
 

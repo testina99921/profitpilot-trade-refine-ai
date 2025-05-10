@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { cn } from "@/lib/utils";
 import {
   Accordion,
@@ -45,8 +45,8 @@ const FAQ = () => {
     <section id="faq" className="py-24 bg-[#12091e]">
       <div className="section-container">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Frequently Asked Questions</h2>
-          <p className="text-lg text-gray-300 font-roboto font-light">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white font-inter">Frequently Asked Questions</h2>
+          <p className="text-lg text-gray-300 font-inter font-light">
             Find answers to common questions about ProfitPilot and how it can help improve your trading results.
           </p>
         </div>
@@ -54,11 +54,15 @@ const FAQ = () => {
         <div className="max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`} className="border-b border-purple-900/30">
-                <AccordionTrigger className="py-4 text-lg font-medium text-white hover:text-purple-400 transition-colors">
+              <AccordionItem 
+                key={index} 
+                value={`item-${index}`} 
+                className="border-b border-purple-900/30 mb-4"
+              >
+                <AccordionTrigger className="py-5 text-lg font-medium text-white hover:text-purple-400 transition-colors font-inter">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-gray-300 pb-4 font-roboto font-light">
+                <AccordionContent className="text-gray-300 pb-5 font-inter font-light text-base">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>

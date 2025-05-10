@@ -74,6 +74,18 @@ export default {
                     800: '#4e3b7a',
                     900: '#362a5e',
                 },
+                indigo: {
+                    100: '#e5eaff',
+                    200: '#c7d4ff',
+                    300: '#a9beff',
+                    400: '#8ba8ff',
+                    500: '#6d92ff',
+                    600: '#4f7cf9',
+                    700: '#3161e0',
+                    800: '#2248b3',
+                    900: '#193088',
+                    950: '#150c2e', // Very dark indigo (background)
+                },
                 charcoal: {
                     100: '#e0e1e3',
                     200: '#c1c3c7',
@@ -103,7 +115,7 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				sans: ['Roboto', 'sans-serif'],
+				sans: ['Inter', 'sans-serif'],
 				inter: ['Inter var', 'sans-serif'],
                 playfair: ['Playfair Display', 'serif'],
                 montserrat: ['Montserrat', 'sans-serif'],

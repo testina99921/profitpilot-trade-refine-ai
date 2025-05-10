@@ -28,10 +28,10 @@ const testimonials = [
 
 const Testimonials = () => {
   return (
-    <section id="testimonials" className="py-16 bg-gradient-to-b from-background to-[#1a0f37]">
+    <section id="testimonials" className="py-16 bg-gradient-to-b from-[#150c2e] to-[#1a0f37]">
       <div className="section-container">
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gradient bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent font-playfair">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white font-inter">
             Trader Success Stories
           </h2>
         </div>
@@ -39,7 +39,7 @@ const Testimonials = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto px-4">
           {testimonials.map((testimonial, index) => (
             <div key={index} className="animate-on-scroll" style={{ animationDelay: `${index * 0.15}s` }}>
-              <div className="testimonial-card h-full glass-card flex flex-col gap-4 p-6">
+              <div className="testimonial-card h-full glass-card flex flex-col gap-4 p-6 bg-indigo-900/20 border border-purple-500/20">
                 <div className="flex items-center gap-4">
                   <img 
                     src={testimonial.image} 
@@ -47,8 +47,8 @@ const Testimonials = () => {
                     className="w-16 h-16 rounded-full object-cover border-2 border-purple-500/50"
                   />
                   <div>
-                    <h4 className="font-semibold text-white">{testimonial.name}</h4>
-                    <p className="text-sm text-gray-400">{testimonial.role}</p>
+                    <h4 className="font-medium text-white font-inter">{testimonial.name}</h4>
+                    <p className="text-sm text-gray-400 font-inter font-light">{testimonial.role}</p>
                   </div>
                 </div>
                 
@@ -65,7 +65,7 @@ const Testimonials = () => {
                   ))}
                 </div>
                 
-                <p className="text-gray-300 italic text-sm">{testimonial.quote}</p>
+                <p className="text-gray-300 italic text-sm font-inter font-light">{testimonial.quote}</p>
               </div>
             </div>
           ))}
