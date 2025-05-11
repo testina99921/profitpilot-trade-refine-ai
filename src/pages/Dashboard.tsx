@@ -32,6 +32,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [tradeData, setTradeData] = useState<any[]>([]);
+  const [hasUploadedData, setHasUploadedData] = useState(false);
   
   // Trading style is determined based on analysis of user's trading data
   const tradingStyle = "Swing Trader";
@@ -58,14 +60,41 @@ const Dashboard = () => {
       return;
     }
     
-    // In a real app, this would process the CSV file
-    toast({
-      title: "File uploaded",
-      description: "Your trade data is being analyzed"
-    });
+    // Process the CSV file
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const csvData = event.target?.result as string;
+      const parsedData = parseCSV(csvData);
+      setTradeData(parsedData);
+      setHasUploadedData(true);
+      
+      toast({
+        title: "File uploaded successfully",
+        description: "Your trade data is now displayed on the dashboard",
+      });
+    };
+    
+    reader.readAsText(file);
     
     // Reset the file input
     e.target.value = '';
+  };
+
+  // Simple CSV parser
+  const parseCSV = (text: string) => {
+    const lines = text.split('\n');
+    const headers = lines[0].split(',');
+    
+    return lines.slice(1).map(line => {
+      const values = line.split(',');
+      const entry = {};
+      
+      headers.forEach((header, index) => {
+        entry[header.trim()] = values[index]?.trim() || '';
+      });
+      
+      return entry;
+    }).filter(entry => Object.values(entry).some(val => val));
   };
   
   // Get available date ranges based on plan
@@ -91,7 +120,11 @@ const Dashboard = () => {
           { value: "7d", label: "Last 7 days" },
           { value: "30d", label: "Last 30 days" }
         ];
-      default: // free
+      case "free":
+        return [
+          { value: "7d", label: "Last 7 days" }
+        ];
+      default:
         return [
           { value: "7d", label: "Last 7 days" }
         ];
@@ -105,19 +138,16 @@ const Dashboard = () => {
 
   // Function to check if feature is available in current plan
   const isFeatureAvailable = (feature: string): boolean => {
-    const proPlans: UserPlan[] = ["pro", "advanced", "elite"];
-    const advancedPlans: UserPlan[] = ["advanced", "elite"];
-    
-    switch(feature) {
-      case "risk-patterns":
-        return proPlans.includes(userPlan);
-      case "risk-mapping":
-        return advancedPlans.includes(userPlan);
-      case "real-time-alerts":
-        return userPlan === "elite";
-      default:
-        return true;
+    if (feature === "risk-patterns") {
+      return userPlan === "pro" || userPlan === "advanced" || userPlan === "elite";
     }
+    else if (feature === "risk-mapping") {
+      return userPlan === "advanced" || userPlan === "elite";
+    }
+    else if (feature === "real-time-alerts") {
+      return userPlan === "elite";
+    }
+    return true;
   };
 
   return (
@@ -139,7 +169,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* File upload button */}
+            {/* File upload button with glow effect */}
             <div className="relative">
               <input
                 type="file"
@@ -148,12 +178,15 @@ const Dashboard = () => {
                 onChange={handleFileUpload}
                 className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
               />
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2 transition-all duration-200 hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:border-purple-400"
+              >
                 <Upload size={16} /> Upload CSV
               </Button>
             </div>
             <button className="neo-button flex items-center gap-2">
-              <Clock size={16} /> {getAvailableDateRanges().find(r => r.value === "7d").label}
+              <Clock size={16} /> {getAvailableDateRanges()[0].label}
             </button>
             <button 
               className={cn(
@@ -273,151 +306,9 @@ const Dashboard = () => {
           </Card>
         </div>
         
-        {/* Analysis section */}
+        {/* Analysis section - Reordered as requested */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="lg:col-span-2 bg-card/50 backdrop-blur-sm border-purple-900/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">Recent Trades</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-purple-900/20">
-                      <th className="text-left py-3 px-2">Symbol</th>
-                      <th className="text-left py-3 px-2">Entry</th>
-                      <th className="text-left py-3 px-2">Exit</th>
-                      <th className="text-left py-3 px-2">P/L</th>
-                      <th className="text-left py-3 px-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
-                      <td className="py-3 px-2">BTC</td>
-                      <td className="py-3 px-2">$64,320</td>
-                      <td className="py-3 px-2">$67,845</td>
-                      <td className="py-3 px-2 text-green-500">+$1,762.50</td>
-                      <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-green-500/20 text-green-500 text-xs">Win</span></td>
-                    </tr>
-                    <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
-                      <td className="py-3 px-2">ETH</td>
-                      <td className="py-3 px-2">$3,412.65</td>
-                      <td className="py-3 px-2">$3,208.32</td>
-                      <td className="py-3 px-2 text-red-500">-$615.75</td>
-                      <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-red-500/20 text-red-500 text-xs">Loss</span></td>
-                    </tr>
-                    <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
-                      <td className="py-3 px-2">SOL</td>
-                      <td className="py-3 px-2">$134.14</td>
-                      <td className="py-3 px-2">$155.78</td>
-                      <td className="py-3 px-2 text-green-500">+$936.80</td>
-                      <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-green-500/20 text-green-500 text-xs">Win</span></td>
-                    </tr>
-                    <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
-                      <td className="py-3 px-2">BNB</td>
-                      <td className="py-3 px-2">$578.22</td>
-                      <td className="py-3 px-2">$605.67</td>
-                      <td className="py-3 px-2 text-green-500">+$472.50</td>
-                      <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-green-500/20 text-green-500 text-xs">Win</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-card/50 backdrop-blur-sm border-purple-900/20">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-              <CardTitle className="text-lg font-medium">AI Insights</CardTitle>
-              {!isFeatureAvailable("risk-patterns") && (
-                <Button variant="outline" size="sm" onClick={() => navigate('/pricing')}>
-                  Upgrade
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                  <p className="text-sm font-medium mb-1">Pattern Detected</p>
-                  <p className="text-xs text-muted-foreground">You tend to exit profitable trades too early. Consider setting wider take-profit levels.</p>
-                </div>
-                
-                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <p className="text-sm font-medium mb-1">Opportunity</p>
-                  <p className="text-xs text-muted-foreground">Your win rate for cryptocurrency trades is 72%. Consider focusing more on this sector.</p>
-                </div>
-                
-                {/* Risk Patterns - Pro plan+ feature */}
-                <div className={cn(
-                  "p-3 rounded-lg border",
-                  isFeatureAvailable("risk-patterns") 
-                    ? "bg-amber-500/10 border-amber-500/20" 
-                    : "bg-gray-500/10 border-gray-500/20 filter blur-[2px]"
-                )}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm font-medium mb-1">Risk Pattern Alert</p>
-                      <p className="text-xs text-muted-foreground">Your position sizing on losing trades is 40% larger than on winning trades.</p>
-                    </div>
-                    {!isFeatureAvailable("risk-patterns") && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
-                        <p className="text-sm font-medium text-white">Pro Plan Feature</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Risk Mapping - Advanced plan+ feature */}
-                <div className={cn(
-                  "p-3 rounded-lg border",
-                  isFeatureAvailable("risk-mapping") 
-                    ? "bg-purple-500/10 border-purple-500/20" 
-                    : "bg-gray-500/10 border-gray-500/20 filter blur-[2px]"
-                )}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm font-medium mb-1">Risk Exposure Mapping</p>
-                      <p className="text-xs text-muted-foreground">Your risk is concentrated in BTC. Consider diversifying with ETH and SOL trades.</p>
-                    </div>
-                    {!isFeatureAvailable("risk-mapping") && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
-                        <p className="text-sm font-medium text-white">Advanced Plan Feature</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Real-Time Alerts - Elite plan feature */}
-                <div className={cn(
-                  "p-3 rounded-lg border",
-                  isFeatureAvailable("real-time-alerts") 
-                    ? "bg-green-500/10 border-green-500/20" 
-                    : "bg-gray-500/10 border-gray-500/20 filter blur-[2px]"
-                )}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm font-medium mb-1">Real-Time AI Alert</p>
-                      <p className="text-xs text-muted-foreground">BTC showing strong support at $63,500. Watch for potential reversal pattern.</p>
-                    </div>
-                    {!isFeatureAvailable("real-time-alerts") && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
-                        <p className="text-sm font-medium text-white">Elite Plan Feature</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                  <p className="text-sm font-medium mb-1">Trading Style Match</p>
-                  <p className="text-xs text-muted-foreground">Your data shows strong performance with <strong>{tradingStyle}</strong> strategies. Focus on 3-5 day holds for best results.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Bottom section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Trading Psychology - Moved from bottom section to here */}
           <Card className="bg-card/50 backdrop-blur-sm border-purple-900/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium">Trading Psychology</CardTitle>
@@ -459,6 +350,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
           
+          {/* Top Trading Hours - Moved from bottom section to here */}
           <Card className="bg-card/50 backdrop-blur-sm border-purple-900/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium">Top Trading Hours</CardTitle>
@@ -520,6 +412,190 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Point 7: Display uploaded CSV data */}
+        {hasUploadedData && (
+          <Card className="mb-8 bg-card/50 backdrop-blur-sm border-purple-900/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Your Uploaded Trading Data</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {tradeData.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-purple-900/20">
+                        {Object.keys(tradeData[0]).map((header, index) => (
+                          <th key={index} className="text-left py-3 px-2">{header}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tradeData.slice(0, 5).map((row, rowIndex) => (
+                        <tr key={rowIndex} className="border-b border-purple-900/10 hover:bg-purple-900/5">
+                          {Object.values(row).map((value: any, cellIndex) => (
+                            <td key={cellIndex} className="py-3 px-2">{value}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {tradeData.length > 5 && (
+                    <p className="text-center text-sm text-muted-foreground mt-4">
+                      Showing 5 of {tradeData.length} entries
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No data available. Please upload a valid CSV file.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* Recent Trades section - Moved to bottom */}
+        <Card className="mb-8 bg-card/50 backdrop-blur-sm border-purple-900/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-medium">Recent Trades</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-purple-900/20">
+                    <th className="text-left py-3 px-2">Symbol</th>
+                    <th className="text-left py-3 px-2">Entry</th>
+                    <th className="text-left py-3 px-2">Exit</th>
+                    <th className="text-left py-3 px-2">P/L</th>
+                    <th className="text-left py-3 px-2">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
+                    <td className="py-3 px-2">BTC</td>
+                    <td className="py-3 px-2">$64,320</td>
+                    <td className="py-3 px-2">$67,845</td>
+                    <td className="py-3 px-2 text-green-500">+$1,762.50</td>
+                    <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-green-500/20 text-green-500 text-xs">Win</span></td>
+                  </tr>
+                  <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
+                    <td className="py-3 px-2">ETH</td>
+                    <td className="py-3 px-2">$3,412.65</td>
+                    <td className="py-3 px-2">$3,208.32</td>
+                    <td className="py-3 px-2 text-red-500">-$615.75</td>
+                    <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-red-500/20 text-red-500 text-xs">Loss</span></td>
+                  </tr>
+                  <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
+                    <td className="py-3 px-2">SOL</td>
+                    <td className="py-3 px-2">$134.14</td>
+                    <td className="py-3 px-2">$155.78</td>
+                    <td className="py-3 px-2 text-green-500">+$936.80</td>
+                    <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-green-500/20 text-green-500 text-xs">Win</span></td>
+                  </tr>
+                  <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
+                    <td className="py-3 px-2">BNB</td>
+                    <td className="py-3 px-2">$578.22</td>
+                    <td className="py-3 px-2">$605.67</td>
+                    <td className="py-3 px-2 text-green-500">+$472.50</td>
+                    <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-green-500/20 text-green-500 text-xs">Win</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* AI Insights */}
+        <Card className="mb-8 bg-card/50 backdrop-blur-sm border-purple-900/20">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-lg font-medium">AI Insights</CardTitle>
+            {!isFeatureAvailable("risk-patterns") && (
+              <Button variant="outline" size="sm" onClick={() => navigate('/pricing')}>
+                Upgrade
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                <p className="text-sm font-medium mb-1">Pattern Detected</p>
+                <p className="text-xs text-muted-foreground">You tend to exit profitable trades too early. Consider setting wider take-profit levels.</p>
+              </div>
+              
+              <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <p className="text-sm font-medium mb-1">Opportunity</p>
+                <p className="text-xs text-muted-foreground">Your win rate for cryptocurrency trades is 72%. Consider focusing more on this sector.</p>
+              </div>
+              
+              {/* Risk Patterns - Pro plan+ feature */}
+              <div className={cn(
+                "p-3 rounded-lg border",
+                isFeatureAvailable("risk-patterns") 
+                  ? "bg-amber-500/10 border-amber-500/20" 
+                  : "bg-gray-500/10 border-gray-500/20 filter blur-[2px]"
+              )}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm font-medium mb-1">Risk Pattern Alert</p>
+                    <p className="text-xs text-muted-foreground">Your position sizing on losing trades is 40% larger than on winning trades.</p>
+                  </div>
+                  {!isFeatureAvailable("risk-patterns") && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+                      <p className="text-sm font-medium text-white">Pro Plan Feature</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Risk Mapping - Advanced plan+ feature */}
+              <div className={cn(
+                "p-3 rounded-lg border",
+                isFeatureAvailable("risk-mapping") 
+                  ? "bg-purple-500/10 border-purple-500/20" 
+                  : "bg-gray-500/10 border-gray-500/20 filter blur-[2px]"
+              )}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm font-medium mb-1">Risk Exposure Mapping</p>
+                    <p className="text-xs text-muted-foreground">Your risk is concentrated in BTC. Consider diversifying with ETH and SOL trades.</p>
+                  </div>
+                  {!isFeatureAvailable("risk-mapping") && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+                      <p className="text-sm font-medium text-white">Advanced Plan Feature</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Real-Time Alerts - Elite plan feature */}
+              <div className={cn(
+                "p-3 rounded-lg border",
+                isFeatureAvailable("real-time-alerts") 
+                  ? "bg-green-500/10 border-green-500/20" 
+                  : "bg-gray-500/10 border-gray-500/20 filter blur-[2px]"
+              )}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm font-medium mb-1">Real-Time AI Alert</p>
+                    <p className="text-xs text-muted-foreground">BTC showing strong support at $63,500. Watch for potential reversal pattern.</p>
+                  </div>
+                  {!isFeatureAvailable("real-time-alerts") && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+                      <p className="text-sm font-medium text-white">Elite Plan Feature</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                <p className="text-sm font-medium mb-1">Trading Style Match</p>
+                <p className="text-xs text-muted-foreground">Your data shows strong performance with <strong>{tradingStyle}</strong> strategies. Focus on 3-5 day holds for best results.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

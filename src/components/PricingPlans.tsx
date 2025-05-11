@@ -3,12 +3,14 @@ import { Check } from "lucide-react";
 import Button from "./Button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const PricingPlans = () => {
   const navigate = useNavigate();
   
   const handleButtonClick = (plan: string) => {
-    navigate('/pricing');
+    // Navigate to the pricing page with the plan as a query parameter
+    navigate(`/pricing?plan=${plan.toLowerCase()}`);
   };
 
   const plans = [
@@ -130,7 +132,7 @@ const PricingPlans = () => {
                   variant={plan.popular ? "primary" : "outline"} 
                   glow={plan.popular} 
                   fullWidth
-                  onClick={() => handleButtonClick(plan.name.toLowerCase())}
+                  onClick={() => handleButtonClick(plan.name)}
                 >
                   {plan.buttonText}
                 </Button>
