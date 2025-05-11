@@ -22,7 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 
-// Define the user plan type to avoid type comparison issues
+// Define the user plan type as a proper union type
 type UserPlan = "free" | "pro" | "advanced" | "elite";
 
 // Mock user plan - in a real app, this would come from authentication
