@@ -47,8 +47,8 @@ const Dashboard = () => {
   };
 
   // Handle file upload
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
     
     if (file.type !== "text/csv") {
@@ -121,9 +121,6 @@ const Dashboard = () => {
           { value: "30d", label: "Last 30 days" }
         ];
       case "free":
-        return [
-          { value: "7d", label: "Last 7 days" }
-        ];
       default:
         return [
           { value: "7d", label: "Last 7 days" }
