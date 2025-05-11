@@ -16,6 +16,9 @@ import Disclaimer from "./pages/Disclaimer";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import Contact from "./pages/Contact";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Pricing from "./pages/Pricing";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient();
@@ -38,6 +41,9 @@ const App: React.FC = () => {
             <Route path="/disclaimer" element={<Disclaimer />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TooltipProvider>

@@ -8,7 +8,7 @@ const PricingPlans = () => {
   const navigate = useNavigate();
   
   const handleButtonClick = (plan: string) => {
-    navigate('/dashboard');
+    navigate('/pricing');
   };
 
   const plans = [
@@ -80,7 +80,7 @@ const PricingPlans = () => {
       <div className="section-container">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Transparent Pricing Plans</h2>
-          <p className="text-lg text-gray-300 font-roboto">
+          <p className="text-lg text-gray-300">
             Choose the plan that best fits your trading needs and scale up as your strategy evolves.
           </p>
         </div>
@@ -107,12 +107,12 @@ const PricingPlans = () => {
                 )}
                 
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold mb-2 font-roboto">{plan.name}</h3>
+                  <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
                   <div className="flex items-baseline">
-                    <span className="text-4xl font-bold font-roboto">${plan.price}</span>
-                    <span className="text-gray-400 ml-2 font-roboto">/month</span>
+                    <span className="text-4xl font-bold">${plan.price}</span>
+                    <span className="text-gray-400 ml-2">/month</span>
                   </div>
-                  <p className="mt-3 text-gray-300 font-roboto">{plan.description}</p>
+                  <p className="mt-3 text-gray-300">{plan.description}</p>
                 </div>
                 
                 <div className="flex-grow mb-6">
@@ -120,7 +120,7 @@ const PricingPlans = () => {
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex">
                         <Check size={18} className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-gray-300 font-roboto">{feature}</span>
+                        <span className="text-gray-300">{feature}</span>
                       </li>
                     ))}
                   </ul>

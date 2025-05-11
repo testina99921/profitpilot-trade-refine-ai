@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from '@/lib/utils';
 import { 
@@ -8,35 +8,97 @@ import {
   BarChart3, 
   Clock, 
   DollarSign, 
-  LineChart, 
-  PieChart, 
+  LineChart,
+  PieChart,
   Settings, 
   TrendingDown, 
   TrendingUp, 
-  Users 
+  Users,
+  ArrowLeft
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  
+  // Trading style is determined based on analysis of user's trading data
+  const tradingStyle = "Swing Trader";
+  
+  const handleBackClick = () => {
+    navigate('/');
+  };
+  
+  const toggleSettings = () => {
+    setSettingsOpen(!settingsOpen);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground p-6">
       <div className="max-w-[1400px] mx-auto">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Trading Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back! Here's your trading performance overview.</p>
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={handleBackClick}
+              className="rounded-full"
+            >
+              <ArrowLeft size={20} />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Trading Dashboard</h1>
+              <p className="text-muted-foreground">Welcome back! Here's your trading performance overview.</p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <button className="neo-button flex items-center gap-2">
               <Clock size={16} /> Last 30 Days
             </button>
-            <button className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+            <button 
+              className={cn(
+                "p-2 rounded-lg transition-colors",
+                settingsOpen 
+                  ? "bg-purple-600/30 text-purple-300" 
+                  : "bg-muted hover:bg-muted/80"
+              )}
+              onClick={toggleSettings}
+            >
               <Settings size={20} />
             </button>
           </div>
         </div>
         
+        {settingsOpen && (
+          <Card className="mb-6 bg-card/50 backdrop-blur-sm border-purple-900/20">
+            <CardContent className="p-4">
+              <h3 className="text-lg font-medium mb-4">Dashboard Settings</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-muted-foreground">Date Range</label>
+                  <select className="w-full mt-1 p-2 rounded bg-background border border-purple-900/30">
+                    <option value="7d">Last 7 days</option>
+                    <option value="30d" selected>Last 30 days</option>
+                    <option value="90d">Last 90 days</option>
+                    <option value="1y">Last year</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground">Chart Type</label>
+                  <select className="w-full mt-1 p-2 rounded bg-background border border-purple-900/30">
+                    <option value="line">Line Chart</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="candlestick">Candlestick</option>
+                  </select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
         {/* Key metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <MetricCard 
             title="Win Rate" 
             value="58.7%" 
@@ -64,6 +126,14 @@ const Dashboard = () => {
             change="-1.1%" 
             isPositive={true}
             icon={<TrendingDown />}
+          />
+          <MetricCard 
+            title="Trading Style" 
+            value={tradingStyle} 
+            change="Best Match" 
+            isPositive={true}
+            icon={<Users />}
+            highlight={true}
           />
         </div>
         
@@ -166,6 +236,11 @@ const Dashboard = () => {
                 <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                   <p className="text-sm font-medium mb-1">Risk Alert</p>
                   <p className="text-xs text-muted-foreground">Your position sizing on losing trades is 40% larger than on winning trades.</p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                  <p className="text-sm font-medium mb-1">Trading Style Match</p>
+                  <p className="text-xs text-muted-foreground">Your data shows strong performance with <strong>{tradingStyle}</strong> strategies. Focus on 3-5 day holds for best results.</p>
                 </div>
               </div>
             </CardContent>
@@ -282,18 +357,29 @@ const Dashboard = () => {
 };
 
 // Metric card component
-const MetricCard = ({ title, value, change, isPositive, icon }) => {
+const MetricCard = ({ title, value, change, isPositive, icon, highlight = false }) => {
   return (
-    <Card className="bg-card/50 backdrop-blur-sm border-purple-900/20">
+    <Card className={cn(
+      "bg-card/50 backdrop-blur-sm", 
+      highlight ? "border-purple-500/50" : "border-purple-900/20"
+    )}>
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-3">
           <p className="text-sm text-muted-foreground">{title}</p>
-          <span className="p-2 rounded-full bg-purple-500/10">
+          <span className={cn(
+            "p-2 rounded-full", 
+            highlight ? "bg-purple-500/20" : "bg-purple-500/10"
+          )}>
             {icon}
           </span>
         </div>
         <div className="flex items-baseline gap-2">
-          <p className="text-2xl font-bold">{value}</p>
+          <p className={cn(
+            "text-2xl font-bold",
+            highlight && "text-purple-400"
+          )}>
+            {value}
+          </p>
           <span className={cn(
             "text-xs font-medium flex items-center",
             isPositive ? "text-green-500" : "text-red-500"

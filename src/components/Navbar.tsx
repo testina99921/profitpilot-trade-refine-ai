@@ -27,11 +27,11 @@ const Navbar = () => {
   };
 
   const handleLogin = () => {
-    navigate('/dashboard');
+    navigate('/login');
   };
 
   const handleUploadTrades = () => {
-    navigate('/dashboard');
+    navigate('/register');
   };
 
   const scrollToTestimonials = () => {
@@ -58,22 +58,22 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <Link to="/" className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
+          <Link to="/" className="text-white hover:text-purple-400 transition-colors font-medium">
             Home
           </Link>
-          <a href="#features" className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
+          <a href="#features" className="text-white hover:text-purple-400 transition-colors font-medium">
             Features
           </a>
-          <a href="#how-it-works" className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
+          <a href="#how-it-works" className="text-white hover:text-purple-400 transition-colors font-medium">
             How It Works
           </a>
-          <a href="#pricing" className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
+          <a href="#pricing" className="text-white hover:text-purple-400 transition-colors font-medium">
             Pricing
           </a>
-          <a href="#testimonials" onClick={scrollToTestimonials} className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
+          <a href="#testimonials" onClick={scrollToTestimonials} className="text-white hover:text-purple-400 transition-colors font-medium">
             Testimonials
           </a>
-          <a href="#faq" className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
+          <a href="#faq" className="text-white hover:text-purple-400 transition-colors font-medium">
             FAQ
           </a>
         </nav>
