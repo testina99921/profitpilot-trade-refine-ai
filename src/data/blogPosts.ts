@@ -1,17 +1,20 @@
 
 import { BlogPost } from '@/types/blog';
 
-const blogPosts: BlogPost[] = [
+export const blogPosts: BlogPost[] = [
   {
     id: "understanding-risk-management",
     title: "Understanding Risk Management in Trading",
     excerpt: "Effective risk management strategies to protect your capital and optimize returns.",
     coverImage: "/img/blog/risk-management.jpg",
-    author: "Sarah Chen",
-    authorTitle: "Risk Management Specialist",
-    authorAvatar: "/img/authors/sarah-chen.jpg",
+    author: {
+      name: "Sarah Chen",
+      avatar: "/img/authors/sarah-chen.jpg",
+      title: "Risk Management Specialist"
+    },
     date: "2025-04-10",
-    category: "Strategy",
+    readingTime: "8 min read",
+    tags: ["Risk Management", "Strategy", "Capital Preservation"],
     content: `
 # Understanding Risk Management in Trading
 
@@ -113,11 +116,14 @@ Remember that preservation of capital should always be your first priority. The 
     title: "AI in Trading: The Dawn of a New Era",
     excerpt: "How artificial intelligence is reshaping the world of trading and what it means for retail investors.",
     coverImage: "/img/blog/ai-trading.jpg",
-    author: "Michael Wong",
-    authorTitle: "Technology Analyst",
-    authorAvatar: "/img/authors/michael-wong.jpg",
+    author: {
+      name: "Michael Wong",
+      avatar: "/img/authors/michael-wong.jpg",
+      title: "Technology Analyst"
+    },
     date: "2025-05-01",
-    category: "Technology",
+    readingTime: "10 min read",
+    tags: ["AI", "Technology", "Trading Strategies"],
     content: `
 # AI in Trading: The Dawn of a New Era
 
@@ -253,11 +259,14 @@ As AI continues to evolve, staying informed about new developments and continuou
     title: "The Psychology of Successful Trading",
     excerpt: "How mastering your mindset is the key to consistent profitability in the markets.",
     coverImage: "/img/blog/trading-psychology.jpg",
-    author: "Dr. Rebecca Morgan",
-    authorTitle: "Trading Psychologist",
-    authorAvatar: "/img/authors/rebecca-morgan.jpg",
+    author: {
+      name: "Dr. Rebecca Morgan",
+      avatar: "/img/authors/rebecca-morgan.jpg",
+      title: "Trading Psychologist"
+    },
     date: "2025-04-22",
-    category: "Psychology",
+    readingTime: "7 min read",
+    tags: ["Psychology", "Trading Mindset", "Emotional Control"],
     content: `
 # The Psychology of Successful Trading
 
@@ -409,4 +418,3 @@ With consistent effort and self-awareness, you can develop the psychological res
   },
 ];
 
-export default blogPosts;
