@@ -105,11 +105,14 @@ const Dashboard = () => {
 
   // Function to check if feature is available in current plan
   const isFeatureAvailable = (feature: string): boolean => {
+    const proPlans: UserPlan[] = ["pro", "advanced", "elite"];
+    const advancedPlans: UserPlan[] = ["advanced", "elite"];
+    
     switch(feature) {
       case "risk-patterns":
-        return ["pro", "advanced", "elite"].includes(userPlan);
+        return proPlans.includes(userPlan);
       case "risk-mapping":
-        return ["advanced", "elite"].includes(userPlan);
+        return advancedPlans.includes(userPlan);
       case "real-time-alerts":
         return userPlan === "elite";
       default:
