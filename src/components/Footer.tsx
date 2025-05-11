@@ -32,17 +32,17 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-[#0c0816] text-white py-10 border-t border-purple-900/20">
+    <footer className="bg-[#0c0816] text-white py-6 border-t border-purple-900/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
           {/* Logo and Mission */}
           <div className="col-span-1 md:col-span-1">
-            <Link to="/" onClick={() => window.scrollTo(0, 0)} className="inline-block mb-4">
+            <Link to="/" onClick={() => window.scrollTo(0, 0)} className="inline-block mb-2">
               <div className="font-roboto font-bold text-2xl">
                 Profit<span className="text-purple-400">Pilot</span>
               </div>
             </Link>
-            <p className="text-gray-400 mb-4 font-roboto font-light">
+            <p className="text-gray-400 mb-3 text-sm font-roboto">
               AI-powered trade analysis to help you refine your strategy and improve your results.
             </p>
             <div className="flex space-x-4">
@@ -69,8 +69,8 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-roboto font-medium mb-4">Quick Links</h3>
-            <ul className="space-y-2 font-roboto font-light">
+            <h3 className="text-base font-roboto font-medium mb-3">Quick Links</h3>
+            <ul className="space-y-1 text-sm font-roboto">
               <li><a href="#" onClick={() => scrollToSection('features')} className="text-gray-400 hover:text-purple-400 transition-colors">Features</a></li>
               <li><a href="#" onClick={() => scrollToSection('how-it-works')} className="text-gray-400 hover:text-purple-400 transition-colors">How It Works</a></li>
               <li><a href="#" onClick={() => scrollToSection('pricing')} className="text-gray-400 hover:text-purple-400 transition-colors">Pricing</a></li>
@@ -83,8 +83,8 @@ const Footer = () => {
 
           {/* Legal */}
           <div>
-            <h3 className="text-lg font-roboto font-medium mb-4">Legal</h3>
-            <ul className="space-y-2 font-roboto font-light">
+            <h3 className="text-base font-roboto font-medium mb-3">Legal</h3>
+            <ul className="space-y-1 text-sm font-roboto">
               <li><Link to="/terms" onClick={() => window.scrollTo(0, 0)} className="text-gray-400 hover:text-purple-400 transition-colors">Terms of Service</Link></li>
               <li><Link to="/privacy" onClick={() => window.scrollTo(0, 0)} className="text-gray-400 hover:text-purple-400 transition-colors">Privacy Policy</Link></li>
               <li><Link to="/cookies" onClick={() => window.scrollTo(0, 0)} className="text-gray-400 hover:text-purple-400 transition-colors">Cookie Policy</Link></li>
@@ -94,8 +94,8 @@ const Footer = () => {
 
           {/* Contact - Simplified to just email */}
           <div>
-            <h3 className="text-lg font-roboto font-medium mb-4">Contact</h3>
-            <div className="font-roboto font-light">
+            <h3 className="text-base font-roboto font-medium mb-3">Contact</h3>
+            <div className="font-roboto text-sm">
               <a 
                 href="mailto:support@profitpilot.com"
                 className="flex items-center text-purple-400 hover:text-purple-300 transition-colors"
@@ -106,8 +106,8 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-gray-800">
-          <p className="text-gray-400 text-sm text-center font-roboto font-light">
+        <div className="mt-5 pt-4 border-t border-gray-800">
+          <p className="text-gray-400 text-xs text-center font-roboto">
             © {new Date().getFullYear()} ProfitPilot. All rights reserved.
             <br />
             ProfitPilot is not a financial advisory service. Trading involves risk.

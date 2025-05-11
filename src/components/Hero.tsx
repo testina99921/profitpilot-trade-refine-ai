@@ -1,9 +1,23 @@
 
 import { ArrowDown } from "lucide-react";
 import Button from "./Button";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+  
   const handleScrollDown = () => {
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+  
+  const handleFreeAnalysis = () => {
+    navigate('/dashboard');
+  };
+  
+  const handleLearnMore = () => {
     const featuresSection = document.getElementById('features');
     if (featuresSection) {
       featuresSection.scrollIntoView({ behavior: 'smooth' });
@@ -26,15 +40,15 @@ const Hero = () => {
           </span>
         </h1>
         
-        <p className="animate-fade-in-up opacity-0 text-lg text-gray-300 max-w-2xl mb-10 font-roboto font-light" style={{ animationDelay: '0.5s' }}>
+        <p className="animate-fade-in-up opacity-0 text-lg text-gray-300 max-w-2xl mb-10 font-roboto" style={{ animationDelay: '0.5s' }}>
           Upload your trade history and let our AI analyze your performance, detect patterns, and provide personalized coaching to improve your trading results.
         </p>
         
         <div className="animate-fade-in-up opacity-0 flex flex-col sm:flex-row gap-4 mb-16" style={{ animationDelay: '0.7s' }}>
-          <Button size="lg" glow>
+          <Button size="lg" glow onClick={handleFreeAnalysis}>
             Start Free Analysis
           </Button>
-          <Button size="lg" variant="outline">
+          <Button size="lg" variant="outline" onClick={handleLearnMore}>
             Learn More
           </Button>
         </div>
@@ -80,7 +94,7 @@ const Hero = () => {
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-300 font-roboto font-light">Win Rate</span>
+                    <span className="text-gray-300 font-roboto">Win Rate</span>
                     <span className="text-white font-medium">58.7%</span>
                   </div>
                   <div className="w-full bg-gray-700/30 h-1.5 rounded-full">
@@ -88,7 +102,7 @@ const Hero = () => {
                   </div>
                   
                   <div className="flex justify-between items-center pt-2">
-                    <span className="text-gray-300 font-roboto font-light">Profit Factor</span>
+                    <span className="text-gray-300 font-roboto">Profit Factor</span>
                     <span className="text-white font-medium">2.3</span>
                   </div>
                   <div className="w-full bg-gray-700/30 h-1.5 rounded-full">
@@ -96,7 +110,7 @@ const Hero = () => {
                   </div>
                   
                   <div className="flex justify-between items-center pt-2">
-                    <span className="text-gray-300 font-roboto font-light">Max Drawdown</span>
+                    <span className="text-gray-300 font-roboto">Max Drawdown</span>
                     <span className="text-white font-medium">12.4%</span>
                   </div>
                   <div className="w-full bg-gray-700/30 h-1.5 rounded-full">

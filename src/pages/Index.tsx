@@ -9,7 +9,6 @@ import PricingPlans from '@/components/PricingPlans';
 import FAQ from '@/components/FAQ';
 import Footer from '@/components/Footer';
 import Testimonials from '@/components/Testimonials';
-import ContactSupport from '@/components/ContactSupport';
 
 const Index = () => {
   useEffect(() => {
@@ -45,10 +44,9 @@ const Index = () => {
       <FeaturedIn />
       <Features />
       <HowItWorks />
-      <PricingPlans />
       <Testimonials />
+      <PricingPlans />
       <FAQ />
-      <ContactSupport />
       <Footer />
     </div>
   );

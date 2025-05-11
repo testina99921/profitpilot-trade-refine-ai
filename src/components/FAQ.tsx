@@ -7,6 +7,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Button from "./Button";
+import { MessageCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface FaqItem {
   question: string;
@@ -14,6 +17,12 @@ interface FaqItem {
 }
 
 const FAQ = () => {
+  const navigate = useNavigate();
+  
+  const handleContactClick = () => {
+    navigate('/contact');
+  };
+
   const faqs: FaqItem[] = [
     {
       question: "How does ProfitPilot analyze my trade data?",
@@ -33,7 +42,7 @@ const FAQ = () => {
     },
     {
       question: "Can I try ProfitPilot before subscribing?",
-      answer: "Yes! Our free plan allows you to analyze up to 5 trades per month with basic performance feedback. This gives you a chance to experience the platform before upgrading to a paid plan. We also offer a 7-day risk-free trial on all paid plans."
+      answer: "Yes! Our free plan allows you to analyze up to 5 trades per month with basic performance feedback. This gives you a chance to experience the platform before upgrading to a paid plan."
     },
     {
       question: "Does ProfitPilot work for stock trading as well as crypto?",
@@ -45,8 +54,8 @@ const FAQ = () => {
     <section id="faq" className="py-24 bg-[#12091e]">
       <div className="section-container">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white font-inter">Frequently Asked Questions</h2>
-          <p className="text-lg text-gray-300 font-inter font-light">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white font-roboto">Frequently Asked Questions</h2>
+          <p className="text-lg text-gray-300 font-roboto">
             Find answers to common questions about ProfitPilot and how it can help improve your trading results.
           </p>
         </div>
@@ -59,15 +68,27 @@ const FAQ = () => {
                 value={`item-${index}`} 
                 className="border-b border-purple-900/30 mb-4"
               >
-                <AccordionTrigger className="py-5 text-lg font-medium text-white hover:text-purple-400 transition-colors font-inter">
+                <AccordionTrigger className="py-5 text-lg font-medium text-white hover:text-purple-400 transition-colors font-roboto">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-gray-300 pb-5 font-inter font-light text-base">
+                <AccordionContent className="text-gray-300 pb-5 font-roboto text-base">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
+          
+          <div className="mt-12 text-center">
+            <Button 
+              size="lg" 
+              glow 
+              className="mx-auto opacity-90 hover:opacity-100"
+              onClick={handleContactClick}
+            >
+              <MessageCircle className="mr-2" />
+              Contact Support
+            </Button>
+          </div>
         </div>
       </div>
     </section>

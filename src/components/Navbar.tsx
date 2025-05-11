@@ -26,6 +26,14 @@ const Navbar = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  const handleLogin = () => {
+    navigate('/dashboard');
+  };
+
+  const handleUploadTrades = () => {
+    navigate('/dashboard');
+  };
+
   const scrollToTestimonials = () => {
     const testimonialsSection = document.getElementById('testimonials');
     if (testimonialsSection) {
@@ -50,31 +58,31 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <Link to="/" className="text-white hover:text-purple-400 transition-colors font-inter">
+          <Link to="/" className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
             Home
           </Link>
-          <a href="#features" className="text-white hover:text-purple-400 transition-colors font-inter">
+          <a href="#features" className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
             Features
           </a>
-          <a href="#how-it-works" className="text-white hover:text-purple-400 transition-colors font-inter">
+          <a href="#how-it-works" className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
             How It Works
           </a>
-          <a href="#pricing" className="text-white hover:text-purple-400 transition-colors font-inter">
+          <a href="#pricing" className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
             Pricing
           </a>
-          <a href="#testimonials" onClick={scrollToTestimonials} className="text-white hover:text-purple-400 transition-colors font-inter">
+          <a href="#testimonials" onClick={scrollToTestimonials} className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
             Testimonials
           </a>
-          <a href="#faq" className="text-white hover:text-purple-400 transition-colors font-inter">
+          <a href="#faq" className="text-white hover:text-purple-400 transition-colors font-roboto font-medium">
             FAQ
           </a>
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleLogin}>
             Log In
           </Button>
-          <Button size="sm" glow>
+          <Button size="sm" glow onClick={handleUploadTrades}>
             <Upload className="w-4 h-4 mr-2" />
             Upload Trades
           </Button>
@@ -131,10 +139,10 @@ const Navbar = () => {
               </a>
             </nav>
             <div className="mt-auto flex flex-col space-y-4">
-              <Button variant="outline" fullWidth>
+              <Button variant="outline" fullWidth onClick={handleLogin}>
                 Log In
               </Button>
-              <Button glow fullWidth>
+              <Button glow fullWidth onClick={handleUploadTrades}>
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Trades
               </Button>

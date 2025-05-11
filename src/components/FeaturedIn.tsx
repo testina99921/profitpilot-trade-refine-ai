@@ -30,9 +30,9 @@ const FeaturedIn = () => {
   ];
 
   return (
-    <section className="py-3 bg-gradient-to-b from-[#120c22] to-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">
-        <div className="text-center mb-2">
+    <section className="py-1.5 bg-gradient-to-b from-[#120c22] to-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1">
+        <div className="text-center mb-1">
           <h3 className="text-sm uppercase tracking-wider text-gray-400 font-medium font-roboto">Featured In</h3>
         </div>
         
