@@ -12,6 +12,7 @@ export const blogPosts: BlogPost[] = [
     author: {
       name: 'Alex Thompson',
       avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+      title: 'Crypto Market Analyst'
     },
     excerpt: 'Learn how to identify and navigate cryptocurrency market cycles to improve your trading strategy and maximize profits.',
     content: `
@@ -122,6 +123,7 @@ Remember that no indicator or framework is foolproof. Always manage your risk ap
     author: {
       name: 'Sarah Chen',
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+      title: 'Risk Management Specialist'
     },
     excerpt: 'Learn essential risk management strategies to protect your trading capital and improve your long-term performance.',
     content: `
@@ -253,6 +255,7 @@ Start by focusing on not losing money before focusing on making money. As Warren
     author: {
       name: 'Michael Rodriguez',
       avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+      title: 'AI Trading Expert'
     },
     excerpt: 'Discover how artificial intelligence and machine learning are revolutionizing trading analysis and strategy development.',
     content: `

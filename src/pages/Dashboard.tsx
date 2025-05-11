@@ -22,8 +22,11 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 
+// Define the user plan type to avoid type comparison issues
+type UserPlan = "free" | "pro" | "advanced" | "elite";
+
 // Mock user plan - in a real app, this would come from authentication
-const userPlan = "free"; // Options: "free", "pro", "advanced", "elite"
+const userPlan: UserPlan = "free"; // Options: "free", "pro", "advanced", "elite"
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -101,14 +104,14 @@ const Dashboard = () => {
   };
 
   // Function to check if feature is available in current plan
-  const isFeatureAvailable = (feature) => {
+  const isFeatureAvailable = (feature: string): boolean => {
     switch(feature) {
       case "risk-patterns":
         return ["pro", "advanced", "elite"].includes(userPlan);
       case "risk-mapping":
         return ["advanced", "elite"].includes(userPlan);
       case "real-time-alerts":
-        return ["elite"].includes(userPlan);
+        return userPlan === "elite";
       default:
         return true;
     }
