@@ -14,14 +14,21 @@ import {
   TrendingDown, 
   TrendingUp, 
   Users,
-  ArrowLeft
+  ArrowLeft,
+  Upload,
+  AlertTriangle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
+
+// Mock user plan - in a real app, this would come from authentication
+const userPlan = "free"; // Options: "free", "pro", "advanced", "elite"
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
   // Trading style is determined based on analysis of user's trading data
   const tradingStyle = "Swing Trader";
@@ -32,6 +39,79 @@ const Dashboard = () => {
   
   const toggleSettings = () => {
     setSettingsOpen(!settingsOpen);
+  };
+
+  // Handle file upload
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (file.type !== "text/csv") {
+      toast({
+        title: "Invalid file format",
+        description: "Please upload a CSV file",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // In a real app, this would process the CSV file
+    toast({
+      title: "File uploaded",
+      description: "Your trade data is being analyzed"
+    });
+    
+    // Reset the file input
+    e.target.value = '';
+  };
+  
+  // Get available date ranges based on plan
+  const getAvailableDateRanges = () => {
+    switch(userPlan) {
+      case "elite":
+        return [
+          { value: "7d", label: "Last 7 days" },
+          { value: "30d", label: "Last 30 days" },
+          { value: "90d", label: "Last 90 days" },
+          { value: "180d", label: "Last 180 days" },
+          { value: "1y", label: "Last year" },
+          { value: "all", label: "All time" }
+        ];
+      case "advanced":
+        return [
+          { value: "7d", label: "Last 7 days" },
+          { value: "30d", label: "Last 30 days" },
+          { value: "90d", label: "Last 90 days" }
+        ];
+      case "pro":
+        return [
+          { value: "7d", label: "Last 7 days" },
+          { value: "30d", label: "Last 30 days" }
+        ];
+      default: // free
+        return [
+          { value: "7d", label: "Last 7 days" }
+        ];
+    }
+  };
+
+  // Function to show upgrade modal
+  const showUpgrade = () => {
+    setShowUpgradeModal(true);
+  };
+
+  // Function to check if feature is available in current plan
+  const isFeatureAvailable = (feature) => {
+    switch(feature) {
+      case "risk-patterns":
+        return ["pro", "advanced", "elite"].includes(userPlan);
+      case "risk-mapping":
+        return ["advanced", "elite"].includes(userPlan);
+      case "real-time-alerts":
+        return ["elite"].includes(userPlan);
+      default:
+        return true;
+    }
   };
 
   return (
@@ -53,8 +133,21 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {/* File upload button */}
+            <div className="relative">
+              <input
+                type="file"
+                id="csv-upload"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+              />
+              <Button variant="outline" className="flex items-center gap-2">
+                <Upload size={16} /> Upload CSV
+              </Button>
+            </div>
             <button className="neo-button flex items-center gap-2">
-              <Clock size={16} /> Last 30 Days
+              <Clock size={16} /> {getAvailableDateRanges().find(r => r.value === "7d").label}
             </button>
             <button 
               className={cn(
@@ -78,11 +171,21 @@ const Dashboard = () => {
                 <div>
                   <label className="text-sm text-muted-foreground">Date Range</label>
                   <select className="w-full mt-1 p-2 rounded bg-background border border-purple-900/30">
-                    <option value="7d">Last 7 days</option>
-                    <option value="30d" selected>Last 30 days</option>
-                    <option value="90d">Last 90 days</option>
-                    <option value="1y">Last year</option>
+                    {getAvailableDateRanges().map((range) => (
+                      <option key={range.value} value={range.value}>{range.label}</option>
+                    ))}
                   </select>
+                  {userPlan !== "elite" && (
+                    <p className="mt-1 text-xs text-purple-300">
+                      <Button 
+                        variant="link" 
+                        className="h-auto p-0 text-xs text-purple-400"
+                        onClick={() => navigate('/pricing')}
+                      >
+                        Upgrade your plan
+                      </Button> for more historical data
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm text-muted-foreground">Chart Type</label>
@@ -184,31 +287,31 @@ const Dashboard = () => {
                   </thead>
                   <tbody>
                     <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
-                      <td className="py-3 px-2">AAPL</td>
-                      <td className="py-3 px-2">$178.32</td>
-                      <td className="py-3 px-2">$184.78</td>
-                      <td className="py-3 px-2 text-green-500">+$642.50</td>
+                      <td className="py-3 px-2">BTC</td>
+                      <td className="py-3 px-2">$64,320</td>
+                      <td className="py-3 px-2">$67,845</td>
+                      <td className="py-3 px-2 text-green-500">+$1,762.50</td>
                       <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-green-500/20 text-green-500 text-xs">Win</span></td>
                     </tr>
                     <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
-                      <td className="py-3 px-2">MSFT</td>
-                      <td className="py-3 px-2">$412.65</td>
-                      <td className="py-3 px-2">$408.32</td>
-                      <td className="py-3 px-2 text-red-500">-$215.75</td>
+                      <td className="py-3 px-2">ETH</td>
+                      <td className="py-3 px-2">$3,412.65</td>
+                      <td className="py-3 px-2">$3,208.32</td>
+                      <td className="py-3 px-2 text-red-500">-$615.75</td>
                       <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-red-500/20 text-red-500 text-xs">Loss</span></td>
                     </tr>
                     <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
-                      <td className="py-3 px-2">NVDA</td>
-                      <td className="py-3 px-2">$892.14</td>
-                      <td className="py-3 px-2">$924.78</td>
-                      <td className="py-3 px-2 text-green-500">+$1,236.80</td>
+                      <td className="py-3 px-2">SOL</td>
+                      <td className="py-3 px-2">$134.14</td>
+                      <td className="py-3 px-2">$155.78</td>
+                      <td className="py-3 px-2 text-green-500">+$936.80</td>
                       <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-green-500/20 text-green-500 text-xs">Win</span></td>
                     </tr>
                     <tr className="border-b border-purple-900/10 hover:bg-purple-900/5">
-                      <td className="py-3 px-2">META</td>
-                      <td className="py-3 px-2">$478.22</td>
-                      <td className="py-3 px-2">$485.67</td>
-                      <td className="py-3 px-2 text-green-500">+$372.50</td>
+                      <td className="py-3 px-2">BNB</td>
+                      <td className="py-3 px-2">$578.22</td>
+                      <td className="py-3 px-2">$605.67</td>
+                      <td className="py-3 px-2 text-green-500">+$472.50</td>
                       <td className="py-3 px-2"><span className="px-2 py-1 rounded-full bg-green-500/20 text-green-500 text-xs">Win</span></td>
                     </tr>
                   </tbody>
@@ -218,8 +321,13 @@ const Dashboard = () => {
           </Card>
           
           <Card className="bg-card/50 backdrop-blur-sm border-purple-900/20">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-medium">AI Insights</CardTitle>
+              {!isFeatureAvailable("risk-patterns") && (
+                <Button variant="outline" size="sm" onClick={() => navigate('/pricing')}>
+                  Upgrade
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -230,12 +338,67 @@ const Dashboard = () => {
                 
                 <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
                   <p className="text-sm font-medium mb-1">Opportunity</p>
-                  <p className="text-xs text-muted-foreground">Your win rate for tech stocks is 72%. Consider focusing more on this sector.</p>
+                  <p className="text-xs text-muted-foreground">Your win rate for cryptocurrency trades is 72%. Consider focusing more on this sector.</p>
                 </div>
                 
-                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                  <p className="text-sm font-medium mb-1">Risk Alert</p>
-                  <p className="text-xs text-muted-foreground">Your position sizing on losing trades is 40% larger than on winning trades.</p>
+                {/* Risk Patterns - Pro plan+ feature */}
+                <div className={cn(
+                  "p-3 rounded-lg border",
+                  isFeatureAvailable("risk-patterns") 
+                    ? "bg-amber-500/10 border-amber-500/20" 
+                    : "bg-gray-500/10 border-gray-500/20 filter blur-[2px]"
+                )}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium mb-1">Risk Pattern Alert</p>
+                      <p className="text-xs text-muted-foreground">Your position sizing on losing trades is 40% larger than on winning trades.</p>
+                    </div>
+                    {!isFeatureAvailable("risk-patterns") && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+                        <p className="text-sm font-medium text-white">Pro Plan Feature</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Risk Mapping - Advanced plan+ feature */}
+                <div className={cn(
+                  "p-3 rounded-lg border",
+                  isFeatureAvailable("risk-mapping") 
+                    ? "bg-purple-500/10 border-purple-500/20" 
+                    : "bg-gray-500/10 border-gray-500/20 filter blur-[2px]"
+                )}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium mb-1">Risk Exposure Mapping</p>
+                      <p className="text-xs text-muted-foreground">Your risk is concentrated in BTC. Consider diversifying with ETH and SOL trades.</p>
+                    </div>
+                    {!isFeatureAvailable("risk-mapping") && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+                        <p className="text-sm font-medium text-white">Advanced Plan Feature</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Real-Time Alerts - Elite plan feature */}
+                <div className={cn(
+                  "p-3 rounded-lg border",
+                  isFeatureAvailable("real-time-alerts") 
+                    ? "bg-green-500/10 border-green-500/20" 
+                    : "bg-gray-500/10 border-gray-500/20 filter blur-[2px]"
+                )}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium mb-1">Real-Time AI Alert</p>
+                      <p className="text-xs text-muted-foreground">BTC showing strong support at $63,500. Watch for potential reversal pattern.</p>
+                    </div>
+                    {!isFeatureAvailable("real-time-alerts") && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+                        <p className="text-sm font-medium text-white">Elite Plan Feature</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">

@@ -49,9 +49,9 @@ const PricingPlans = () => {
       features: [
         "1000 trade reviews per month",
         "Risk exposure mapping",
-        "Alternative trade simulations",
+        "Risk pattern detection",
         "90-day data history",
-        "Custom strategy development",
+        "Advanced AI insights",
         "Priority chat support"
       ],
       buttonText: "Choose Advanced",
@@ -64,10 +64,10 @@ const PricingPlans = () => {
       description: "Full suite for professional traders",
       features: [
         "3000 trade reviews per month",
-        "Trading style coaching",
+        "Advanced AI insights",
         "Real-time AI alerts",
         "Unlimited data history",
-        "1-on-1 analyst consultation",
+        "Risk exposure mapping",
         "Access to Trading Discord"
       ],
       buttonText: "Choose Elite",
@@ -79,8 +79,8 @@ const PricingPlans = () => {
     <section id="pricing" className="py-24 bg-gradient-to-b from-[#150c2e] to-[#1a0f37]">
       <div className="section-container">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Transparent Pricing Plans</h2>
-          <p className="text-lg text-gray-300">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white font-inter">Transparent Pricing Plans</h2>
+          <p className="text-lg text-gray-300 font-inter font-light">
             Choose the plan that best fits your trading needs and scale up as your strategy evolves.
           </p>
         </div>
@@ -112,7 +112,7 @@ const PricingPlans = () => {
                     <span className="text-4xl font-bold">${plan.price}</span>
                     <span className="text-gray-400 ml-2">/month</span>
                   </div>
-                  <p className="mt-3 text-gray-300">{plan.description}</p>
+                  <p className="mt-3 text-gray-300 font-inter font-light">{plan.description}</p>
                 </div>
                 
                 <div className="flex-grow mb-6">
@@ -120,7 +120,7 @@ const PricingPlans = () => {
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex">
                         <Check size={18} className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-gray-300">{feature}</span>
+                        <span className="text-gray-300 font-inter font-light">{feature}</span>
                       </li>
                     ))}
                   </ul>
