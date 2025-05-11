@@ -23,14 +23,13 @@ const DashboardPreview = () => {
         
         <div className="perspective-container">
           <div className="relative mx-auto w-full max-w-5xl rounded-xl shadow-2xl overflow-hidden perspective-image">
-            {/* Actual screenshot of the dashboard with fallback */}
             <img 
-              src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=2000&q=80" 
+              src="/dashboard-preview.jpg"
               alt="ProfitPilot Trading Dashboard" 
               className="w-full h-auto rounded-xl border border-purple-500/30"
               onError={(e) => {
-                e.currentTarget.src = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=2000&q=80";
-                e.currentTarget.style.minHeight = "400px";
+                e.currentTarget.src = "https://images.unsplash.com/photo-1642790290540-71a069f0fc39?auto=format&fit=crop&q=80&w=2000&h=1000";
+                e.currentTarget.alt = "Trading Dashboard Preview";
               }}
             />
             <div className="absolute -bottom-4 -right-4 w-40 h-40 rounded-full bg-gradient-to-r from-purple-500 to-bluetint-500 blur-3xl opacity-20"></div>
