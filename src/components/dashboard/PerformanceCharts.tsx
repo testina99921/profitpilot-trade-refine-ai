@@ -1,7 +1,20 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart as LineChartIcon, PieChart as PieChartIcon, Line, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart } from 'recharts';
+import { 
+  LineChart, 
+  Line, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend 
+} from 'recharts';
+import { LineChart as LineChartIcon, PieChart as PieChartIcon } from 'lucide-react';
 import { TradeDataEntry } from '@/types/dashboard';
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
@@ -44,7 +57,7 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
       let date;
       try {
         // Try to parse the date
-        date = new Date(trade[dateKey]);
+        date = new Date(String(trade[dateKey]));
         if (isNaN(date.getTime())) {
           // If parsing fails, try a different format
           const parts = String(trade[dateKey]).split(/[/.-]/);
