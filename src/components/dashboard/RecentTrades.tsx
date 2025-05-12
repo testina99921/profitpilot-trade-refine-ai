@@ -44,7 +44,7 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
 
     // Convert and format recent trades
     return tradeData.slice(0, 4).map(trade => {
-      const pnl = pnlKey ? parseFloat(trade[pnlKey] || '0') : 0;
+      const pnl = pnlKey ? parseFloat(String(trade[pnlKey] || '0')) : 0;
       const formattedPnl = pnl.toLocaleString('en-US', { 
         style: 'currency', 
         currency: 'USD',
@@ -54,8 +54,8 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
       
       return {
         symbol: symbolKey ? trade[symbolKey] : 'Unknown',
-        entry: entryKey ? `$${parseFloat(trade[entryKey]).toLocaleString()}` : 'N/A',
-        exit: exitKey ? `$${parseFloat(trade[exitKey]).toLocaleString()}` : 'N/A',
+        entry: entryKey ? `$${parseFloat(String(trade[entryKey])).toLocaleString()}` : 'N/A',
+        exit: exitKey ? `$${parseFloat(String(trade[exitKey])).toLocaleString()}` : 'N/A',
         pnl: pnl >= 0 ? `+${formattedPnl}` : formattedPnl,
         status: pnl >= 0 ? 'Win' : 'Loss'
       };
@@ -87,7 +87,7 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
                   <td className="py-3 px-2">{trade.symbol}</td>
                   <td className="py-3 px-2">{trade.entry}</td>
                   <td className="py-3 px-2">{trade.exit}</td>
-                  <td className="py-3 px-2" className={trade.status === 'Win' ? 'text-green-500' : 'text-red-500'}>{trade.pnl}</td>
+                  <td className={`py-3 px-2 ${trade.status === 'Win' ? 'text-green-500' : 'text-red-500'}`}>{trade.pnl}</td>
                   <td className="py-3 px-2">
                     <span className={`px-2 py-1 rounded-full ${trade.status === 'Win' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'} text-xs`}>
                       {trade.status}

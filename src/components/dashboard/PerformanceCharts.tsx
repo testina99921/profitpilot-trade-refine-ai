@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, PieChart, Line, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart as RechartsType } from 'recharts';
+import { LineChart as LineChartIcon, PieChart as PieChartIcon, Line, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart } from 'recharts';
 import { TradeDataEntry } from '@/types/dashboard';
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
@@ -38,30 +38,31 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
     ) || 'PnL';
 
     // Group by month and sum profits
-    const performanceByMonth = tradeData.reduce((acc, trade) => {
+    const performanceByMonth: Record<string, { date: string; profit: number }> = {};
+    
+    tradeData.forEach(trade => {
       let date;
       try {
         // Try to parse the date
         date = new Date(trade[dateKey]);
         if (isNaN(date.getTime())) {
           // If parsing fails, try a different format
-          const parts = trade[dateKey].split(/[/.-]/);
-          date = new Date(parts[2], parts[1] - 1, parts[0]);
+          const parts = String(trade[dateKey]).split(/[/.-]/);
+          date = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
         }
       } catch (e) {
         // If date parsing fails completely, use a counter instead
-        return acc;
+        return;
       }
 
       const month = date.toLocaleString('default', { month: 'short' });
-      const profit = parseFloat(trade[profitKey] || '0');
+      const profit = parseFloat(String(trade[profitKey] || '0'));
 
-      if (!acc[month]) {
-        acc[month] = { date: month, profit: 0 };
+      if (!performanceByMonth[month]) {
+        performanceByMonth[month] = { date: month, profit: 0 };
       }
-      acc[month].profit += isNaN(profit) ? 0 : profit;
-      return acc;
-    }, {});
+      performanceByMonth[month].profit += isNaN(profit) ? 0 : profit;
+    });
 
     return Object.values(performanceByMonth);
   };
@@ -84,8 +85,8 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
     ) || 'PnL';
 
     // Count winning vs losing trades
-    const winning = tradeData.filter(trade => parseFloat(trade[profitKey] || '0') > 0).length;
-    const losing = tradeData.filter(trade => parseFloat(trade[profitKey] || '0') <= 0).length;
+    const winning = tradeData.filter(trade => parseFloat(String(trade[profitKey] || '0')) > 0).length;
+    const losing = tradeData.filter(trade => parseFloat(String(trade[profitKey] || '0')) <= 0).length;
 
     return [
       { name: 'Winning', value: winning },
@@ -124,7 +125,7 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
             </div>
           ) : (
             <div className="h-80 flex items-center justify-center">
-              <PieChart size={48} className="text-muted-foreground opacity-50" />
+              <LineChartIcon className="text-muted-foreground opacity-50" />
               <p className="ml-4 text-muted-foreground">Upload CSV data to see your performance chart</p>
             </div>
           )}
@@ -162,7 +163,7 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
             </div>
           ) : (
             <div className="h-80 flex items-center justify-center flex-col">
-              <PieChart size={48} className="text-muted-foreground opacity-50 mb-4" />
+              <PieChartIcon className="text-muted-foreground opacity-50 mb-4" />
               <p className="text-muted-foreground">Upload CSV data to see your trade distribution</p>
             </div>
           )}
