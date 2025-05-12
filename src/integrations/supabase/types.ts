@@ -9,7 +9,114 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          trading_style: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          trading_style?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          trading_style?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          created_at: string
+          entry_price: number
+          exit_price: number | null
+          id: string
+          notes: string | null
+          profit_loss: number | null
+          quantity: number
+          status: string
+          symbol: string
+          trade_date: string
+          trade_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_price: number
+          exit_price?: number | null
+          id?: string
+          notes?: string | null
+          profit_loss?: number | null
+          quantity: number
+          status: string
+          symbol: string
+          trade_date?: string
+          trade_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entry_price?: number
+          exit_price?: number | null
+          id?: string
+          notes?: string | null
+          profit_loss?: number | null
+          quantity?: number
+          status?: string
+          symbol?: string
+          trade_date?: string
+          trade_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          currency: string | null
+          id: string
+          notification_preferences: Json | null
+          theme: string | null
+          updated_at: string
+          user_id: string
+          user_plan: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          id?: string
+          notification_preferences?: Json | null
+          theme?: string | null
+          updated_at?: string
+          user_id: string
+          user_plan?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          id?: string
+          notification_preferences?: Json | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string
+          user_plan?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
