@@ -5,37 +5,61 @@ import MetricCard from './MetricCard';
 
 interface KeyMetricsProps {
   tradingStyle: string;
+  winRate: string;
+  winRateChange: string;
+  totalProfit: string;
+  totalProfitChange: string;
+  riskReward: string;
+  riskRewardChange: string;
+  avgDrawdown: string;
+  avgDrawdownChange: string;
 }
 
-const KeyMetrics: React.FC<KeyMetricsProps> = ({ tradingStyle }) => {
+const KeyMetrics: React.FC<KeyMetricsProps> = ({
+  tradingStyle,
+  winRate,
+  winRateChange,
+  totalProfit,
+  totalProfitChange,
+  riskReward,
+  riskRewardChange,
+  avgDrawdown,
+  avgDrawdownChange
+}) => {
+  // Determine if changes are positive
+  const isWinRatePositive = !winRateChange.startsWith('-');
+  const isTotalProfitPositive = !totalProfitChange.startsWith('-');
+  const isRiskRewardPositive = !riskRewardChange.startsWith('-');
+  const isAvgDrawdownPositive = avgDrawdownChange.startsWith('-'); // For drawdown, negative change is good
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
       <MetricCard 
         title="Win Rate" 
-        value="58.7%" 
-        change="+4.3%" 
-        isPositive={true}
+        value={winRate} 
+        change={winRateChange} 
+        isPositive={isWinRatePositive}
         icon={<TrendingUp />}
       />
       <MetricCard 
         title="Total Profit" 
-        value="$12,837" 
-        change="+18.2%" 
-        isPositive={true}
+        value={totalProfit} 
+        change={totalProfitChange} 
+        isPositive={isTotalProfitPositive}
         icon={<DollarSign />}
       />
       <MetricCard 
         title="Risk/Reward" 
-        value="1:2.3" 
-        change="+0.4" 
-        isPositive={true}
+        value={riskReward} 
+        change={riskRewardChange} 
+        isPositive={isRiskRewardPositive}
         icon={<BarChart3 />}
       />
       <MetricCard 
         title="Avg. Drawdown" 
-        value="4.2%" 
-        change="-1.1%" 
-        isPositive={true}
+        value={avgDrawdown} 
+        change={avgDrawdownChange} 
+        isPositive={isAvgDrawdownPositive}
         icon={<TrendingDown />}
       />
       <MetricCard 
