@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { UserPlan, TradeDataEntry } from '@/types/dashboard';
@@ -59,7 +58,7 @@ const Dashboard = () => {
         toast({
           title: "Trade limit reached",
           description: `Your ${userPlan} plan allows ${tradeLimit} trades. Upgrade to view more.`,
-          variant: "warning",
+          variant: "default",
         });
       }
     }
