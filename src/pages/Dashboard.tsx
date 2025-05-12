@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { UserPlan, TradeDataEntry } from '@/types/dashboard';
 import { parseCSV } from '@/utils/dashboardUtils';
@@ -26,11 +26,20 @@ import AIInsights from '@/components/dashboard/AIInsights';
 // Mock user plan - in a real app, this would come from authentication
 const userPlan: UserPlan = "free"; // Options: "free", "pro", "advanced", "elite"
 
+// Define trade limits per plan
+const TRADE_LIMITS: Record<UserPlan, number> = {
+  "free": 5,
+  "pro": 200,
+  "advanced": 1000,
+  "elite": 3000
+};
+
 const Dashboard = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [tradeData, setTradeData] = useState<TradeDataEntry[]>([]);
   const [hasUploadedData, setHasUploadedData] = useState(false);
+  const [rawTradeData, setRawTradeData] = useState<TradeDataEntry[]>([]);
   
   // Metrics state
   const [winRate, setWinRate] = useState({ value: 58.7, change: 4.3 });
@@ -39,14 +48,41 @@ const Dashboard = () => {
   const [avgDrawdown, setAvgDrawdown] = useState({ value: 4.2, change: -1.1 });
   const [tradingStyle, setTradingStyle] = useState("Swing Trader");
   
+  // Limit trades based on user plan
+  useEffect(() => {
+    if (rawTradeData.length > 0) {
+      const tradeLimit = TRADE_LIMITS[userPlan];
+      const limitedTrades = rawTradeData.slice(0, tradeLimit);
+      setTradeData(limitedTrades);
+      
+      if (rawTradeData.length > tradeLimit) {
+        toast({
+          title: "Trade limit reached",
+          description: `Your ${userPlan} plan allows ${tradeLimit} trades. Upgrade to view more.`,
+          variant: "warning",
+        });
+      }
+    }
+  }, [rawTradeData, userPlan]);
+
   // Update metrics when trade data changes
   useEffect(() => {
     if (tradeData.length > 0) {
+      console.log("Analyzing trade data:", tradeData);
+      console.log("Sample trade:", tradeData[0]);
+      
       const calculatedWinRate = calculateWinRate(tradeData);
       const calculatedProfit = calculateTotalProfit(tradeData);
       const calculatedRiskReward = calculateRiskReward(tradeData);
       const calculatedAvgDrawdown = calculateAvgDrawdown(tradeData);
       const detectedTradingStyle = determineTradingStyle(tradeData);
+      
+      console.log("Calculated metrics:", {
+        winRate: calculatedWinRate,
+        profit: calculatedProfit,
+        riskReward: calculatedRiskReward,
+        avgDrawdown: calculatedAvgDrawdown
+      });
       
       setWinRate({ 
         value: parseFloat(calculatedWinRate.toFixed(1)), 
@@ -104,7 +140,18 @@ const Dashboard = () => {
     reader.onload = (event) => {
       const csvData = event.target?.result as string;
       const parsedData = parseCSV(csvData);
-      setTradeData(parsedData);
+      
+      console.log("Parsed CSV data:", parsedData);
+      if (parsedData.length === 0) {
+        toast({
+          title: "Empty or invalid CSV",
+          description: "No valid trade data found in the CSV file",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setRawTradeData(parsedData);
       setHasUploadedData(true);
       
       toast({
@@ -118,6 +165,11 @@ const Dashboard = () => {
     // Reset the file input
     e.target.value = '';
   };
+
+  // Calculate total trades and capped status for UI
+  const totalTrades = rawTradeData.length;
+  const displayedTrades = tradeData.length;
+  const isCapped = totalTrades > displayedTrades;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6">
@@ -133,6 +185,19 @@ const Dashboard = () => {
         {/* Dashboard Settings */}
         {settingsOpen && (
           <DashboardSettings userPlan={userPlan} />
+        )}
+        
+        {/* Display plan limits info if data is capped */}
+        {isCapped && hasUploadedData && (
+          <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-md">
+            <p className="text-sm">
+              <span className="font-medium">Note:</span> Your {userPlan} plan allows viewing {displayedTrades} out of {totalTrades} uploaded trades. 
+              <button className="ml-2 text-purple-400 hover:text-purple-300 underline" 
+                onClick={() => setShowUpgradeModal(true)}>
+                Upgrade your plan
+              </button> to analyze more trades.
+            </p>
+          </div>
         )}
         
         {/* Key metrics */}
@@ -162,6 +227,9 @@ const Dashboard = () => {
         <UploadedTradeData 
           tradeData={tradeData}
           hasUploadedData={hasUploadedData}
+          totalTrades={totalTrades}
+          displayedTrades={displayedTrades}
+          userPlan={userPlan}
         />
         
         {/* Recent Trades section - Moved to bottom */}

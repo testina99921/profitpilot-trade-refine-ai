@@ -23,9 +23,20 @@ interface PerformanceChartsProps {
   hasData: boolean;
 }
 
+// Define types for our chart data
+interface PerformanceDataPoint {
+  date: string;
+  profit: number;
+}
+
+interface DistributionDataPoint {
+  name: string;
+  value: number;
+}
+
 const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasData }) => {
   // Function to prepare data for performance chart
-  const preparePerformanceData = () => {
+  const preparePerformanceData = (): PerformanceDataPoint[] => {
     if (!hasData || !tradeData.length) {
       // Return demo data if no real data exists
       return [
@@ -39,6 +50,8 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
       ];
     }
 
+    console.log("Preparing performance data from:", tradeData);
+
     // Try to identify date and profit columns
     const dateKey = Object.keys(tradeData[0]).find(key => 
       key.toLowerCase().includes('date') || key.toLowerCase().includes('time')
@@ -50,8 +63,10 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
       key.toLowerCase().includes('profit')
     ) || 'PnL';
 
+    console.log(`Using dateKey: ${dateKey} and profitKey: ${profitKey}`);
+
     // Group by month and sum profits
-    const performanceByMonth: Record<string, { date: string; profit: number }> = {};
+    const performanceByMonth: Record<string, PerformanceDataPoint> = {};
     
     tradeData.forEach(trade => {
       let date;
@@ -65,6 +80,7 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
         }
       } catch (e) {
         // If date parsing fails completely, use a counter instead
+        console.log("Failed to parse date from:", trade[dateKey]);
         return;
       }
 
@@ -77,11 +93,12 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
       performanceByMonth[month].profit += isNaN(profit) ? 0 : profit;
     });
 
+    console.log("Processed performance data:", performanceByMonth);
     return Object.values(performanceByMonth);
   };
 
   // Function to prepare data for trade distribution
-  const prepareDistributionData = () => {
+  const prepareDistributionData = (): DistributionDataPoint[] => {
     if (!hasData || !tradeData.length) {
       // Return demo data if no real data exists
       return [
@@ -90,6 +107,8 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
       ];
     }
 
+    console.log("Preparing distribution data from:", tradeData);
+
     // Try to identify profit/loss column
     const profitKey = Object.keys(tradeData[0]).find(key => 
       key.toLowerCase().includes('pnl') || 
@@ -97,9 +116,20 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
       key.toLowerCase().includes('profit')
     ) || 'PnL';
 
+    console.log(`Using profitKey: ${profitKey} for distribution`);
+
     // Count winning vs losing trades
-    const winning = tradeData.filter(trade => parseFloat(String(trade[profitKey] || '0')) > 0).length;
-    const losing = tradeData.filter(trade => parseFloat(String(trade[profitKey] || '0')) <= 0).length;
+    const winning = tradeData.filter(trade => {
+      const profitValue = parseFloat(String(trade[profitKey] || '0'));
+      return profitValue > 0;
+    }).length;
+    
+    const losing = tradeData.filter(trade => {
+      const profitValue = parseFloat(String(trade[profitKey] || '0'));
+      return profitValue <= 0;
+    }).length;
+
+    console.log(`Counted ${winning} winning trades and ${losing} losing trades`);
 
     return [
       { name: 'Winning', value: winning },

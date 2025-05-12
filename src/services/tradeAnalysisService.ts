@@ -5,134 +5,181 @@ import { TradeDataEntry } from "@/types/dashboard";
 export const calculateWinRate = (tradeData: TradeDataEntry[]): number => {
   if (!tradeData.length) return 0;
   
+  console.log("Calculating win rate from:", tradeData);
+  
+  // Find the profit/loss column
+  const profitKey = findProfitLossKey(tradeData[0]);
+  if (!profitKey) {
+    console.log("No profit/loss column found for win rate calculation");
+    return 0;
+  }
+  
+  console.log(`Using ${profitKey} column for win rate calculation`);
+  
   const wins = tradeData.filter(trade => {
-    // Check if the trade has a profit/loss field that indicates a win
-    if ('PnL' in trade) return parseFloat(trade.PnL) > 0;
-    if ('P&L' in trade) return parseFloat(trade['P&L']) > 0;
-    if ('Profit/Loss' in trade) return parseFloat(trade['Profit/Loss']) > 0;
-    // Try to calculate from entry and exit prices if available
-    if ('Entry' in trade && 'Exit' in trade) {
-      const entry = parseFloat(trade.Entry);
-      const exit = parseFloat(trade.Exit);
-      if (!isNaN(entry) && !isNaN(exit)) {
-        return exit > entry;
-      }
-    }
-    return false;
+    const profitValue = parseFloat(String(trade[profitKey] || '0'));
+    return profitValue > 0;
   }).length;
   
-  return (wins / tradeData.length) * 100;
+  const winRate = (wins / tradeData.length) * 100;
+  console.log(`Win rate calculated: ${winRate}% (${wins}/${tradeData.length})`);
+  
+  return winRate;
 };
 
 // Calculate total profit
 export const calculateTotalProfit = (tradeData: TradeDataEntry[]): number => {
   if (!tradeData.length) return 0;
   
-  return tradeData.reduce((total, trade) => {
-    if ('PnL' in trade) return total + parseFloat(trade.PnL || '0');
-    if ('P&L' in trade) return total + parseFloat(trade['P&L'] || '0');
-    if ('Profit/Loss' in trade) return total + parseFloat(trade['Profit/Loss'] || '0');
-    
-    // Try to calculate from entry and exit prices if available
-    if ('Entry' in trade && 'Exit' in trade && 'Size' in trade) {
-      const entry = parseFloat(trade.Entry);
-      const exit = parseFloat(trade.Exit);
-      const size = parseFloat(trade.Size);
-      if (!isNaN(entry) && !isNaN(exit) && !isNaN(size)) {
-        return total + (exit - entry) * size;
-      }
-    }
-    return total;
+  console.log("Calculating total profit from:", tradeData);
+  
+  // Find the profit/loss column
+  const profitKey = findProfitLossKey(tradeData[0]);
+  if (!profitKey) {
+    console.log("No profit/loss column found for profit calculation");
+    return 0;
+  }
+  
+  console.log(`Using ${profitKey} column for total profit calculation`);
+  
+  const totalProfit = tradeData.reduce((total, trade) => {
+    const profitValue = parseFloat(String(trade[profitKey] || '0'));
+    return total + (isNaN(profitValue) ? 0 : profitValue);
   }, 0);
+  
+  console.log(`Total profit calculated: ${totalProfit}`);
+  
+  return totalProfit;
 };
 
 // Calculate risk-reward ratio
 export const calculateRiskReward = (tradeData: TradeDataEntry[]): number => {
   if (!tradeData.length) return 0;
   
+  console.log("Calculating risk-reward from:", tradeData);
+  
+  // Find the profit/loss column
+  const profitKey = findProfitLossKey(tradeData[0]);
+  if (!profitKey) {
+    console.log("No profit/loss column found for risk-reward calculation");
+    return 0;
+  }
+  
   const winningTrades = tradeData.filter(trade => {
-    if ('PnL' in trade) return parseFloat(trade.PnL) > 0;
-    if ('P&L' in trade) return parseFloat(trade['P&L']) > 0;
-    if ('Profit/Loss' in trade) return parseFloat(trade['Profit/Loss']) > 0;
-    return false;
+    const profitValue = parseFloat(String(trade[profitKey] || '0'));
+    return profitValue > 0;
   });
   
   const losingTrades = tradeData.filter(trade => {
-    if ('PnL' in trade) return parseFloat(trade.PnL) < 0;
-    if ('P&L' in trade) return parseFloat(trade['P&L']) < 0;
-    if ('Profit/Loss' in trade) return parseFloat(trade['Profit/Loss']) < 0;
-    return false;
+    const profitValue = parseFloat(String(trade[profitKey] || '0'));
+    return profitValue < 0;
   });
   
-  if (!winningTrades.length || !losingTrades.length) return 0;
+  if (!winningTrades.length || !losingTrades.length) {
+    console.log("Not enough winning or losing trades for risk-reward calculation");
+    return 0;
+  }
   
   const avgWin = winningTrades.reduce((sum, trade) => {
-    if ('PnL' in trade) return sum + Math.abs(parseFloat(trade.PnL));
-    if ('P&L' in trade) return sum + Math.abs(parseFloat(trade['P&L']));
-    if ('Profit/Loss' in trade) return sum + Math.abs(parseFloat(trade['Profit/Loss']));
-    return sum;
+    const profitValue = parseFloat(String(trade[profitKey] || '0'));
+    return sum + Math.abs(isNaN(profitValue) ? 0 : profitValue);
   }, 0) / winningTrades.length;
   
   const avgLoss = losingTrades.reduce((sum, trade) => {
-    if ('PnL' in trade) return sum + Math.abs(parseFloat(trade.PnL));
-    if ('P&L' in trade) return sum + Math.abs(parseFloat(trade['P&L']));
-    if ('Profit/Loss' in trade) return sum + Math.abs(parseFloat(trade['Profit/Loss']));
-    return sum;
+    const profitValue = parseFloat(String(trade[profitKey] || '0'));
+    return sum + Math.abs(isNaN(profitValue) ? 0 : profitValue);
   }, 0) / losingTrades.length;
   
-  return avgLoss ? avgWin / avgLoss : 0;
+  const riskReward = avgLoss ? avgWin / avgLoss : 0;
+  console.log(`Risk-reward calculated: ${riskReward} (avgWin: ${avgWin}, avgLoss: ${avgLoss})`);
+  
+  return riskReward;
 };
 
 // Calculate average drawdown
 export const calculateAvgDrawdown = (tradeData: TradeDataEntry[]): number => {
   // For simplicity, we'll estimate drawdown as the average of losing trades as percentage
+  if (!tradeData.length) return 0;
+  
+  console.log("Calculating average drawdown from:", tradeData);
+  
+  // Find the profit/loss column
+  const profitKey = findProfitLossKey(tradeData[0]);
+  if (!profitKey) {
+    console.log("No profit/loss column found for drawdown calculation");
+    return 0;
+  }
+  
   const losingTrades = tradeData.filter(trade => {
-    if ('PnL' in trade) return parseFloat(trade.PnL) < 0;
-    if ('P&L' in trade) return parseFloat(trade['P&L']) < 0;
-    if ('Profit/Loss' in trade) return parseFloat(trade['Profit/Loss']) < 0;
-    return false;
+    const profitValue = parseFloat(String(trade[profitKey] || '0'));
+    return profitValue < 0;
   });
   
-  if (!losingTrades.length) return 0;
+  if (!losingTrades.length) {
+    console.log("No losing trades found for drawdown calculation");
+    return 0;
+  }
   
-  return losingTrades.reduce((sum, trade) => {
-    let loss = 0;
-    if ('PnL' in trade) loss = Math.abs(parseFloat(trade.PnL));
-    if ('P&L' in trade) loss = Math.abs(parseFloat(trade['P&L']));
-    if ('Profit/Loss' in trade) loss = Math.abs(parseFloat(trade['Profit/Loss']));
+  // Find entry price and size columns if available
+  const entryKey = findEntryKey(tradeData[0]);
+  const sizeKey = findSizeKey(tradeData[0]);
+  
+  let drawdownSum = 0;
+  let validTradesCount = 0;
+  
+  for (const trade of losingTrades) {
+    const loss = Math.abs(parseFloat(String(trade[profitKey] || '0')));
+    if (isNaN(loss)) continue;
     
-    // Calculate size/capital if available to get percentage
-    if ('Size' in trade && 'Entry' in trade) {
-      const size = parseFloat(trade.Size);
-      const entry = parseFloat(trade.Entry);
-      if (!isNaN(size) && !isNaN(entry) && size * entry > 0) {
-        return sum + (loss / (size * entry)) * 100;
+    // Try to calculate as percentage if we have entry and size info
+    if (entryKey && sizeKey) {
+      const entry = parseFloat(String(trade[entryKey] || '0'));
+      const size = parseFloat(String(trade[sizeKey] || '0'));
+      
+      if (!isNaN(entry) && !isNaN(size) && entry > 0 && size > 0) {
+        const position = entry * size;
+        const drawdownPct = (loss / position) * 100;
+        drawdownSum += drawdownPct;
+        validTradesCount++;
+        continue;
       }
     }
-    // Default to just accumulating loss amounts if we can't calculate percentage
-    return sum + loss;
-  }, 0) / losingTrades.length;
+    
+    // If we can't calculate percentage, use a default approximation
+    // Assuming average drawdown is around 2-5% of account
+    drawdownSum += (loss / 1000) * 100; // rough estimate
+    validTradesCount++;
+  }
+  
+  const avgDrawdown = validTradesCount > 0 ? drawdownSum / validTradesCount : 0;
+  console.log(`Average drawdown calculated: ${avgDrawdown}%`);
+  
+  return avgDrawdown;
 };
 
 // Determine trading style based on trade data
 export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
   if (!tradeData.length) return "Undefined";
   
-  // Look for time-based columns to determine trading style
-  const hasTimeColumn = tradeData.some(trade => 
-    'Duration' in trade || 'Time Held' in trade || 'Holding Period' in trade
-  );
+  console.log("Determining trading style from:", tradeData);
   
-  if (hasTimeColumn) {
-    // Calculate average holding time if possible
+  // Look for time-based columns to determine trading style
+  const durationKey = findDurationKey(tradeData[0]);
+  const dateKey = findDateKey(tradeData[0]);
+  
+  if (durationKey) {
+    console.log(`Using ${durationKey} column for trading style determination`);
+    
+    // Calculate trading style based on holding duration
     const holdingTimes = tradeData
-      .filter(trade => 'Duration' in trade || 'Time Held' in trade || 'Holding Period' in trade)
+      .filter(trade => trade[durationKey])
       .map(trade => {
-        const duration = trade.Duration || trade['Time Held'] || trade['Holding Period'] || '';
-        // Try to parse duration - this is simplified, actual CSV might use different formats
-        if (duration.includes('d') || parseInt(duration) > 24) {
+        const duration = String(trade[durationKey] || '');
+        if (duration.toLowerCase().includes('d') || parseInt(duration) > 24) {
           return 'long';
-        } else if (duration.includes('m') || parseInt(duration) < 1) {
+        } else if (duration.toLowerCase().includes('m') || 
+                  duration.toLowerCase().includes('s') || 
+                  parseInt(duration) < 1) {
           return 'scalp';
         } else {
           return 'day';
@@ -158,13 +205,171 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
       }
     }
     
+    console.log(`Trading style determined by duration: ${dominantStyle}`);
     return dominantStyle;
   }
   
-  // If no time information, check by number of trades
+  // If no duration column, try to infer from trade frequency
+  if (dateKey) {
+    console.log(`Using ${dateKey} column to infer trading style from frequency`);
+    
+    try {
+      // Get all dates
+      const dates = tradeData
+        .map(trade => new Date(String(trade[dateKey])))
+        .filter(date => !isNaN(date.getTime()));
+      
+      // If we have valid dates
+      if (dates.length > 0) {
+        // Sort dates
+        dates.sort((a, b) => a.getTime() - b.getTime());
+        
+        // Calculate date range and average trades per day
+        const dateRange = (dates[dates.length - 1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24);
+        const tradesPerDay = tradeData.length / (dateRange || 1);
+        
+        console.log(`Trades per day: ${tradesPerDay} over ${dateRange} days`);
+        
+        if (tradesPerDay > 5) return "Scalp Trader";
+        if (tradesPerDay > 1) return "Day Trader";
+        return "Swing Trader";
+      }
+    } catch (e) {
+      console.error("Error calculating trading style from dates:", e);
+    }
+  }
+  
+  // If all else fails, determine by trade count
   if (tradeData.length > 20) {
     return "Day Trader";
   } else {
     return "Swing Trader";
   }
 };
+
+// Helper functions to find column keys
+function findProfitLossKey(sampleTrade: TradeDataEntry): string | null {
+  const possibleKeys = [
+    'PnL', 'P&L', 'P/L', 'Profit', 'Profit/Loss', 'GainLoss', 'Gain/Loss',
+    'Net', 'Net Profit', 'Result', 'Return', 'Outcome', 'profit', 'pnl'
+  ];
+  
+  // First try exact matches
+  for (const key of possibleKeys) {
+    if (key in sampleTrade) return key;
+  }
+  
+  // Then try case-insensitive contains
+  for (const key of Object.keys(sampleTrade)) {
+    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
+      return key;
+    }
+  }
+  
+  return null;
+}
+
+function findEntryKey(sampleTrade: TradeDataEntry): string | null {
+  const possibleKeys = [
+    'Entry', 'Entry Price', 'Open', 'Open Price', 'Buy', 'Buy Price',
+    'entry', 'entryprice', 'open', 'openprice'
+  ];
+  
+  // First try exact matches
+  for (const key of possibleKeys) {
+    if (key in sampleTrade) return key;
+  }
+  
+  // Then try case-insensitive contains
+  for (const key of Object.keys(sampleTrade)) {
+    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
+      return key;
+    }
+  }
+  
+  return null;
+}
+
+function findExitKey(sampleTrade: TradeDataEntry): string | null {
+  const possibleKeys = [
+    'Exit', 'Exit Price', 'Close', 'Close Price', 'Sell', 'Sell Price',
+    'exit', 'exitprice', 'close', 'closeprice'
+  ];
+  
+  // First try exact matches
+  for (const key of possibleKeys) {
+    if (key in sampleTrade) return key;
+  }
+  
+  // Then try case-insensitive contains
+  for (const key of Object.keys(sampleTrade)) {
+    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
+      return key;
+    }
+  }
+  
+  return null;
+}
+
+function findSizeKey(sampleTrade: TradeDataEntry): string | null {
+  const possibleKeys = [
+    'Size', 'Quantity', 'Amount', 'Volume', 'Shares', 'Contracts',
+    'size', 'qty', 'quantity', 'amount', 'volume', 'position'
+  ];
+  
+  // First try exact matches
+  for (const key of possibleKeys) {
+    if (key in sampleTrade) return key;
+  }
+  
+  // Then try case-insensitive contains
+  for (const key of Object.keys(sampleTrade)) {
+    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
+      return key;
+    }
+  }
+  
+  return null;
+}
+
+function findDurationKey(sampleTrade: TradeDataEntry): string | null {
+  const possibleKeys = [
+    'Duration', 'Time Held', 'Holding Period', 'Hold Time', 'Timeframe',
+    'duration', 'held', 'period', 'hold', 'holdtime'
+  ];
+  
+  // First try exact matches
+  for (const key of possibleKeys) {
+    if (key in sampleTrade) return key;
+  }
+  
+  // Then try case-insensitive contains
+  for (const key of Object.keys(sampleTrade)) {
+    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
+      return key;
+    }
+  }
+  
+  return null;
+}
+
+function findDateKey(sampleTrade: TradeDataEntry): string | null {
+  const possibleKeys = [
+    'Date', 'Trade Date', 'Entry Date', 'Open Date', 'Time', 'Timestamp',
+    'date', 'tradedate', 'entrydate', 'opendate'
+  ];
+  
+  // First try exact matches
+  for (const key of possibleKeys) {
+    if (key in sampleTrade) return key;
+  }
+  
+  // Then try case-insensitive contains
+  for (const key of Object.keys(sampleTrade)) {
+    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
+      return key;
+    }
+  }
+  
+  return null;
+}

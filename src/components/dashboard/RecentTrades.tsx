@@ -8,9 +8,17 @@ interface RecentTradesProps {
   hasData: boolean;
 }
 
+interface FormattedTrade {
+  symbol: string;
+  entry: string;
+  exit: string;
+  pnl: string;
+  status: 'Win' | 'Loss';
+}
+
 const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
   // Function to extract recent trades from trade data
-  const getRecentTrades = () => {
+  const getRecentTrades = (): FormattedTrade[] => {
     if (!hasData || !tradeData.length) {
       // Return demo data if no real data exists
       return [
@@ -20,6 +28,8 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
         { symbol: 'BNB', entry: '$578.22', exit: '$605.67', pnl: '+$472.50', status: 'Win' },
       ];
     }
+
+    console.log("Processing recent trades from:", tradeData);
 
     // Try to identify relevant columns
     const symbolKey = Object.keys(tradeData[0]).find(key => 
@@ -42,6 +52,8 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
       key.toLowerCase().includes('profit')
     );
 
+    console.log(`Using keys: symbol=${symbolKey}, entry=${entryKey}, exit=${exitKey}, pnl=${pnlKey}`);
+
     // Convert and format recent trades
     return tradeData.slice(0, 4).map(trade => {
       const pnl = pnlKey ? parseFloat(String(trade[pnlKey] || '0')) : 0;
@@ -53,7 +65,7 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
       });
       
       return {
-        symbol: symbolKey ? trade[symbolKey] : 'Unknown',
+        symbol: symbolKey ? String(trade[symbolKey]) : 'Unknown',
         entry: entryKey ? `$${parseFloat(String(trade[entryKey])).toLocaleString()}` : 'N/A',
         exit: exitKey ? `$${parseFloat(String(trade[exitKey])).toLocaleString()}` : 'N/A',
         pnl: pnl >= 0 ? `+${formattedPnl}` : formattedPnl,
@@ -87,9 +99,17 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
                   <td className="py-3 px-2">{trade.symbol}</td>
                   <td className="py-3 px-2">{trade.entry}</td>
                   <td className="py-3 px-2">{trade.exit}</td>
-                  <td className={`py-3 px-2 ${trade.status === 'Win' ? 'text-green-500' : 'text-red-500'}`}>{trade.pnl}</td>
+                  <td className={`py-3 px-2 ${trade.status === 'Win' ? 'text-green-500' : 'text-red-500'}`}>
+                    {trade.pnl}
+                  </td>
                   <td className="py-3 px-2">
-                    <span className={`px-2 py-1 rounded-full ${trade.status === 'Win' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'} text-xs`}>
+                    <span 
+                      className={`px-2 py-1 rounded-full ${
+                        trade.status === 'Win' 
+                          ? 'bg-green-500/20 text-green-500' 
+                          : 'bg-red-500/20 text-red-500'
+                      } text-xs`}
+                    >
                       {trade.status}
                     </span>
                   </td>
