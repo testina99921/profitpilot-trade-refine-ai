@@ -1,4 +1,3 @@
-
 import { UserPlan } from "../types/dashboard";
 
 // Get available date ranges based on plan
@@ -46,19 +45,33 @@ export const isFeatureAvailable = (feature: string, userPlan: UserPlan): boolean
   return true;
 };
 
-// Simple CSV parser
+// Enhanced CSV parser with better handling of exchange data formats
 export const parseCSV = (text: string) => {
-  const lines = text.split('\n');
-  const headers = lines[0].split(',');
+  const lines = text.split('\n').filter(line => line.trim() !== '');
   
-  return lines.slice(1).map(line => {
-    const values = line.split(',');
-    const entry = {};
-    
-    headers.forEach((header, index) => {
-      entry[header.trim()] = values[index]?.trim() || '';
+  if (lines.length === 0) return [];
+  
+  // Identify delimiter (comma or tab)
+  const delimiter = lines[0].includes(',') ? ',' : '\t';
+  const headers = lines[0].split(delimiter).map(header => header.trim());
+  
+  console.log("CSV Headers detected:", headers);
+  
+  return lines.slice(1)
+    .map(line => {
+      const values = line.split(delimiter);
+      const entry = {};
+      
+      headers.forEach((header, index) => {
+        if (index < values.length) {
+          entry[header.trim()] = values[index]?.trim() || '';
+        }
+      });
+      
+      return entry;
+    })
+    .filter(entry => {
+      // Filter out empty entries or header repeats
+      return Object.values(entry).some(val => val !== '' && val !== 'Symbol Type' && val !== 'Exit Price');
     });
-    
-    return entry;
-  }).filter(entry => Object.values(entry).some(val => val));
 };

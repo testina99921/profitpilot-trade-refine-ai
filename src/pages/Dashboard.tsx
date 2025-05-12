@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { UserPlan, TradeDataEntry } from '@/types/dashboard';
 import { parseCSV } from '@/utils/dashboardUtils';
@@ -85,7 +86,7 @@ const Dashboard = () => {
       
       setWinRate({ 
         value: parseFloat(calculatedWinRate.toFixed(1)), 
-        // Mocking change for now - in a real app this would compare to previous period
+        // For comparison to previous period in a real app
         change: parseFloat((Math.random() * 10 - 5).toFixed(1)) 
       });
       
@@ -125,7 +126,7 @@ const Dashboard = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    if (file.type !== "text/csv") {
+    if (file.type !== "text/csv" && !file.name.toLowerCase().endsWith('.csv')) {
       toast({
         title: "Invalid file format",
         description: "Please upload a CSV file",
@@ -148,6 +149,17 @@ const Dashboard = () => {
           variant: "destructive"
         });
         return;
+      }
+      
+      // Apply plan limits right at upload time
+      const tradeLimit = TRADE_LIMITS[userPlan];
+      
+      if (parsedData.length > tradeLimit) {
+        toast({
+          title: `Showing ${tradeLimit} out of ${parsedData.length} trades`,
+          description: `Your ${userPlan} plan allows viewing ${tradeLimit} trades. Upgrade to view more.`,
+          variant: "default",
+        });
       }
       
       setRawTradeData(parsedData);
@@ -215,14 +227,14 @@ const Dashboard = () => {
         {/* Charts row */}
         <PerformanceCharts tradeData={tradeData} hasData={hasUploadedData} />
         
-        {/* Analysis section - Reordered as requested */}
+        {/* Analysis section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <TradingPsychology />
           <TopTradingHours />
           <CommunityBenchmark winRate={winRate.value} riskReward={riskReward.value} />
         </div>
 
-        {/* Point 7: Display uploaded CSV data */}
+        {/* Display uploaded CSV data */}
         <UploadedTradeData 
           tradeData={tradeData}
           hasUploadedData={hasUploadedData}
@@ -231,7 +243,7 @@ const Dashboard = () => {
           userPlan={userPlan}
         />
         
-        {/* Recent Trades section - Moved to bottom */}
+        {/* Recent Trades section */}
         <RecentTrades tradeData={tradeData} hasData={hasUploadedData} />
 
         {/* AI Insights */}

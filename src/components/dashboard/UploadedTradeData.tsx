@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TradeDataEntry, UserPlan } from '@/types/dashboard';
@@ -23,6 +22,57 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
     return null;
   }
 
+  // If no data was uploaded or processed successfully
+  if (tradeData.length === 0) {
+    return (
+      <Card className="mb-8 bg-card/50 backdrop-blur-sm border-purple-900/20">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-medium">Your Uploaded Trading Data</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            No data available. Please upload a valid CSV file with trading data.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Determine if we should show all columns or just the important ones
+  const allKeys = Object.keys(tradeData[0]);
+  
+  // Choose the most important columns to display if there are too many
+  const getDisplayColumns = () => {
+    const priorityKeys = [
+      'Symbol', 'Entry Price', 'Exit Price', 'Closed P&L', 
+      'Trade Time(UTC)', 'Create Time', 'Symbol Type', 'Contracts'
+    ];
+    
+    // If we have 6 or fewer columns, show all of them
+    if (allKeys.length <= 6) return allKeys;
+    
+    // Otherwise, pick the most important ones first, then fill with others
+    const selectedKeys = [];
+    
+    // First add any priority keys that exist
+    for (const key of priorityKeys) {
+      if (allKeys.includes(key)) {
+        selectedKeys.push(key);
+      }
+    }
+    
+    // If we still need more keys to get to 6, add others
+    for (const key of allKeys) {
+      if (!selectedKeys.includes(key) && selectedKeys.length < 6) {
+        selectedKeys.push(key);
+      }
+    }
+    
+    return selectedKeys;
+  };
+  
+  const displayColumns = getDisplayColumns();
+
   return (
     <Card className="mb-8 bg-card/50 backdrop-blur-sm border-purple-900/20">
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
@@ -44,7 +94,7 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-purple-900/20">
-                  {Object.keys(tradeData[0]).map((header, index) => (
+                  {displayColumns.map((header, index) => (
                     <th key={index} className="text-left py-3 px-2">{header}</th>
                   ))}
                 </tr>
@@ -52,8 +102,8 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
               <tbody>
                 {tradeData.slice(0, 5).map((row, rowIndex) => (
                   <tr key={rowIndex} className="border-b border-purple-900/10 hover:bg-purple-900/5">
-                    {Object.values(row).map((value: any, cellIndex) => (
-                      <td key={cellIndex} className="py-3 px-2">{String(value)}</td>
+                    {displayColumns.map((key, cellIndex) => (
+                      <td key={cellIndex} className="py-3 px-2">{String(row[key] || '')}</td>
                     ))}
                   </tr>
                 ))}
