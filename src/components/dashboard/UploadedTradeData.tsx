@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TradeDataEntry, UserPlan } from '@/types/dashboard';
 import { ArrowUpRight } from 'lucide-react';
+import { extractCleanSymbol } from '@/utils/dashboardUtils';
 
 interface UploadedTradeDataProps {
   tradeData: TradeDataEntry[];
@@ -38,14 +40,14 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
     );
   }
 
-  // Determine if we should show all columns or just the important ones
+  // Process the columns to display
   const allKeys = Object.keys(tradeData[0]);
   
   // Choose the most important columns to display if there are too many
   const getDisplayColumns = () => {
     const priorityKeys = [
       'Symbol', 'Entry Price', 'Exit Price', 'Closed P&L', 
-      'Trade Time(UTC)', 'Create Time', 'Symbol Type', 'Contracts'
+      'Trade Time(UTC)', 'Create Time', 'Side', 'Size', 'Contracts'
     ];
     
     // If we have 6 or fewer columns, show all of them
@@ -72,6 +74,18 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
   };
   
   const displayColumns = getDisplayColumns();
+
+  // Function to format cell value based on column name
+  const formatCellValue = (key: string, value: string) => {
+    if (!value) return '';
+    
+    // Special handling for Symbol column
+    if (key === 'Symbol') {
+      return extractCleanSymbol(value);
+    }
+    
+    return String(value || '');
+  };
 
   return (
     <Card className="mb-8 bg-card/50 backdrop-blur-sm border-purple-900/20">
@@ -103,7 +117,9 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
                 {tradeData.slice(0, 5).map((row, rowIndex) => (
                   <tr key={rowIndex} className="border-b border-purple-900/10 hover:bg-purple-900/5">
                     {displayColumns.map((key, cellIndex) => (
-                      <td key={cellIndex} className="py-3 px-2">{String(row[key] || '')}</td>
+                      <td key={cellIndex} className="py-3 px-2">
+                        {formatCellValue(key, String(row[key] || ''))}
+                      </td>
                     ))}
                   </tr>
                 ))}

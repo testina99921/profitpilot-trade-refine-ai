@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { UserPlan, TradeDataEntry } from '@/types/dashboard';
@@ -28,7 +27,7 @@ const userPlan: UserPlan = "free"; // Options: "free", "pro", "advanced", "elite
 
 // Define trade limits per plan
 const TRADE_LIMITS: Record<UserPlan, number> = {
-  "free": 5,
+  "free": 7,  // Updated from 5 to 7 as specified
   "pro": 200,
   "advanced": 1000,
   "elite": 3000
@@ -151,23 +150,24 @@ const Dashboard = () => {
         return;
       }
       
-      // Apply plan limits right at upload time
+      // Store the complete dataset
+      setRawTradeData(parsedData);
+      setHasUploadedData(true);
+      
+      // Apply plan limits at upload time
       const tradeLimit = TRADE_LIMITS[userPlan];
       
       if (parsedData.length > tradeLimit) {
         toast({
-          title: `Showing ${tradeLimit} out of ${parsedData.length} trades`,
-          description: `Your ${userPlan} plan allows viewing ${tradeLimit} trades. Upgrade to view more.`,
+          title: `Trade limit reached`,
+          description: `Your ${userPlan} plan allows viewing ${tradeLimit} out of ${parsedData.length} trades. Upgrade to view more.`,
           variant: "default",
         });
       }
       
-      setRawTradeData(parsedData);
-      setHasUploadedData(true);
-      
       toast({
         title: "File uploaded successfully",
-        description: "Your trade data is now being analyzed",
+        description: `Processing ${Math.min(tradeLimit, parsedData.length)} trades for analysis`,
       });
     };
     

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TradeDataEntry } from '@/types/dashboard';
+import { extractCleanSymbol, extractNumericValue } from '@/utils/dashboardUtils';
 
 interface RecentTradesProps {
   tradeData: TradeDataEntry[];
@@ -41,66 +42,36 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
 
     // Convert and format recent trades
     return tradeData.slice(0, 4).map(trade => {
+      // Get symbol in clean format
+      const symbol = symbolKey ? extractCleanSymbol(String(trade[symbolKey])) : 'Unknown';
+      
+      // Get entry and exit prices
+      const entryValue = entryKey ? extractNumericValue(trade[entryKey]) : NaN;
+      const exitValue = exitKey ? extractNumericValue(trade[exitKey]) : NaN;
+      
       // Get PNL value
       const pnlValue = pnlKey ? extractNumericValue(trade[pnlKey]) : 0;
       
       // If no direct PNL value and we have entry/exit prices, calculate it
       let calculatedPnl = pnlValue;
-      if ((pnlValue === 0 || isNaN(pnlValue)) && entryKey && exitKey) {
-        const entry = extractNumericValue(trade[entryKey]);
-        const exit = extractNumericValue(trade[exitKey]);
-        if (!isNaN(entry) && !isNaN(exit)) {
-          calculatedPnl = exit - entry;
-        }
+      if ((isNaN(pnlValue) || pnlValue === 0) && !isNaN(entryValue) && !isNaN(exitValue)) {
+        calculatedPnl = exitValue - entryValue;
       }
       
-      // Format the PNL value
-      const formattedPnl = formatCurrency(calculatedPnl);
+      // Format the values
+      const formattedEntry = formatCurrency(entryValue);
+      const formattedExit = formatCurrency(exitValue);
+      const formattedPnl = formatCurrency(Math.abs(calculatedPnl));
+      const pnlWithSign = calculatedPnl >= 0 ? `+${formattedPnl}` : `-${formattedPnl}`;
       
       return {
-        symbol: symbolKey ? extractSymbol(trade[symbolKey]) : 'Unknown',
-        entry: entryKey ? formatCurrency(extractNumericValue(trade[entryKey])) : 'N/A',
-        exit: exitKey ? formatCurrency(extractNumericValue(trade[exitKey])) : 'N/A',
-        pnl: calculatedPnl >= 0 ? `+${formattedPnl}` : formattedPnl,
+        symbol,
+        entry: formattedEntry,
+        exit: formattedExit,
+        pnl: pnlWithSign,
         status: calculatedPnl >= 0 ? 'Win' : 'Loss'
       };
     });
-  };
-  
-  // Helper function to extract symbol from various formats
-  const extractSymbol = (value: any): string => {
-    if (!value) return 'Unknown';
-    const str = String(value);
-    
-    // If contains USDT, BTC, or other common pairs
-    if (/[A-Z0-9]{2,}(USDT|BTC|ETH|USD|BUSD)/.test(str)) {
-      const match = str.match(/([A-Z0-9]{2,})(USDT|BTC|ETH|USD|BUSD)/);
-      return match ? match[0] : str;
-    }
-    
-    return str;
-  };
-  
-  // Helper function to extract numeric value from string or number
-  const extractNumericValue = (value: any): number => {
-    if (value === undefined || value === null) return NaN;
-    
-    // If already a number
-    if (typeof value === 'number') return value;
-    
-    const stringValue = String(value).trim();
-    
-    // Remove common currency symbols and thousand separators
-    const cleanedValue = stringValue
-      .replace(/[$£€,]/g, '')
-      .replace(/^\+/, ''); // Remove leading + sign
-    
-    // Check if it's a negative value with parentheses like (123.45)
-    if (/^\(.*\)$/.test(cleanedValue)) {
-      return -parseFloat(cleanedValue.replace(/[()]/g, ''));
-    }
-    
-    return parseFloat(cleanedValue);
   };
   
   // Helper function to format currency
@@ -129,14 +100,6 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
     // Then try case-insensitive contains
     for (const key of Object.keys(sampleTrade)) {
       if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
-        return key;
-      }
-    }
-
-    // Look for any key that might contain a cryptocurrency symbol
-    for (const key of Object.keys(sampleTrade)) {
-      const value = String(sampleTrade[key] || '');
-      if (/[A-Z]{2,}(USDT|BTC|ETH|USD|BUSD)/.test(value)) {
         return key;
       }
     }
@@ -190,7 +153,7 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
     const possibleKeys = [
       'PnL', 'P&L', 'P/L', 'Profit', 'Profit/Loss', 'GainLoss', 'Gain/Loss',
       'Net', 'Net Profit', 'Result', 'Return', 'Outcome', 'profit', 'pnl',
-      'Closed P&L', 'Closed PnL'
+      'Closed P&L', 'Closed PnL', 'Realized PnL'
     ];
     
     // First try exact matches

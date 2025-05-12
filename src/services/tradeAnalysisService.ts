@@ -1,5 +1,6 @@
 
 import { TradeDataEntry } from "@/types/dashboard";
+import { extractNumericValue } from "@/utils/dashboardUtils";
 
 // Calculate win rate from trade data
 export const calculateWinRate = (tradeData: TradeDataEntry[]): number => {
@@ -200,7 +201,7 @@ export const calculateAvgDrawdown = (tradeData: TradeDataEntry[]): number => {
     
     // If we can't calculate percentage, use a default approximation
     // Assuming average drawdown is around 2-5% of account
-    drawdownSum += (loss / 1000) * 100; // rough estimate
+    drawdownSum += Math.min(10, (loss / 100)); // rough estimate, capped at 10%
     validTradesCount++;
   }
   
@@ -220,6 +221,22 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
   const durationKey = findDurationKey(tradeData[0]);
   const dateKey = findDateKey(tradeData[0]);
   const timeKey = findTimeKey(tradeData[0]);
+  
+  // Check if we have a status column that might indicate trade type (e.g., "BustTrade")
+  let hasLeveragedTrades = false;
+  const statusKey = findKey(tradeData[0], ['Status', 'Trade Type', 'Type', 'status', 'type']);
+  
+  if (statusKey) {
+    // Check if we have any status values indicating leveraged trading
+    hasLeveragedTrades = tradeData.some(trade => {
+      const status = String(trade[statusKey] || '').toLowerCase();
+      return status.includes('bust') || 
+             status.includes('liquidat') || 
+             status.includes('leverag') ||
+             status.includes('perpetual') ||
+             status.includes('futures');
+    });
+  }
   
   if (durationKey) {
     console.log(`Using ${durationKey} column for trading style determination`);
@@ -248,14 +265,14 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
     
     // Find the most common style
     let maxCount = 0;
-    let dominantStyle = 'Swing Trader';
+    let dominantStyle = hasLeveragedTrades ? 'Futures Trader' : 'Swing Trader';
     
     for (const [style, count] of Object.entries(counts)) {
       if (count > maxCount) {
         maxCount = count;
-        if (style === 'scalp') dominantStyle = 'Scalp Trader';
-        else if (style === 'day') dominantStyle = 'Day Trader';
-        else if (style === 'long') dominantStyle = 'Swing Trader';
+        if (style === 'scalp') dominantStyle = hasLeveragedTrades ? 'Scalp Futures Trader' : 'Scalp Trader';
+        else if (style === 'day') dominantStyle = hasLeveragedTrades ? 'Day Futures Trader' : 'Day Trader';
+        else if (style === 'long') dominantStyle = hasLeveragedTrades ? 'Position Trader' : 'Swing Trader';
       }
     }
     
@@ -291,9 +308,13 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
         
         console.log(`Trades per day: ${tradesPerDay} over ${dateRange} days`);
         
-        if (tradesPerDay > 5) return "Scalp Trader";
-        if (tradesPerDay > 1) return "Day Trader";
-        return "Swing Trader";
+        if (tradesPerDay > 5) {
+          return hasLeveragedTrades ? 'Scalp Futures Trader' : 'Scalp Trader';
+        }
+        if (tradesPerDay > 1) {
+          return hasLeveragedTrades ? 'Day Futures Trader' : 'Day Trader';
+        }
+        return hasLeveragedTrades ? 'Position Trader' : 'Swing Trader';
       }
     } catch (e) {
       console.error("Error calculating trading style from dates:", e);
@@ -302,176 +323,80 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
   
   // If all else fails, determine by trade count
   if (tradeData.length > 20) {
-    return "Day Trader";
+    return hasLeveragedTrades ? 'Day Futures Trader' : 'Day Trader';
   } else {
-    return "Swing Trader";
+    return hasLeveragedTrades ? 'Position Trader' : 'Swing Trader';
   }
 };
 
-// Helper function to extract numeric value from string or number
-function extractNumericValue(value: any): number {
-  if (value === undefined || value === null) return NaN;
-  
-  // If already a number
-  if (typeof value === 'number') return value;
-  
-  const stringValue = String(value).trim();
-  
-  // Remove common currency symbols and thousand separators
-  const cleanedValue = stringValue
-    .replace(/[$£€,]/g, '')
-    .replace(/^\+/, ''); // Remove leading + sign
-  
-  // Check if it's a negative value with parentheses like (123.45)
-  if (/^\(.*\)$/.test(cleanedValue)) {
-    return -parseFloat(cleanedValue.replace(/[()]/g, ''));
-  }
-  
-  return parseFloat(cleanedValue);
-}
-
 // Helper functions to find column keys
 function findProfitLossKey(sampleTrade: TradeDataEntry): string | null {
-  const possibleKeys = [
+  return findKey(sampleTrade, [
     'PnL', 'P&L', 'P/L', 'Profit', 'Profit/Loss', 'GainLoss', 'Gain/Loss',
     'Net', 'Net Profit', 'Result', 'Return', 'Outcome', 'profit', 'pnl',
-    'Closed P&L', 'Closed PnL'
-  ];
-  
-  // First try exact matches
-  for (const key of possibleKeys) {
-    if (key in sampleTrade) return key;
-  }
-  
-  // Then try case-insensitive contains
-  for (const key of Object.keys(sampleTrade)) {
-    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
-      return key;
-    }
-  }
-  
-  return null;
+    'Closed P&L', 'Closed PnL', 'Realized PnL'
+  ]);
 }
 
 function findEntryKey(sampleTrade: TradeDataEntry): string | null {
-  const possibleKeys = [
+  return findKey(sampleTrade, [
     'Entry', 'Entry Price', 'Open', 'Open Price', 'Buy', 'Buy Price',
     'entry', 'entryprice', 'open', 'openprice'
-  ];
-  
-  // First try exact matches
-  for (const key of possibleKeys) {
-    if (key in sampleTrade) return key;
-  }
-  
-  // Then try case-insensitive contains
-  for (const key of Object.keys(sampleTrade)) {
-    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
-      return key;
-    }
-  }
-  
-  return null;
+  ]);
 }
 
 function findExitKey(sampleTrade: TradeDataEntry): string | null {
-  const possibleKeys = [
+  return findKey(sampleTrade, [
     'Exit', 'Exit Price', 'Close', 'Close Price', 'Sell', 'Sell Price',
     'exit', 'exitprice', 'close', 'closeprice'
-  ];
-  
-  // First try exact matches
-  for (const key of possibleKeys) {
-    if (key in sampleTrade) return key;
-  }
-  
-  // Then try case-insensitive contains
-  for (const key of Object.keys(sampleTrade)) {
-    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
-      return key;
-    }
-  }
-  
-  return null;
+  ]);
 }
 
 function findSizeKey(sampleTrade: TradeDataEntry): string | null {
-  const possibleKeys = [
-    'Size', 'Quantity', 'Amount', 'Volume', 'Shares', 'Contracts',
-    'size', 'qty', 'quantity', 'amount', 'volume', 'position', 'Qty'
-  ];
-  
-  // First try exact matches
-  for (const key of possibleKeys) {
-    if (key in sampleTrade) return key;
-  }
-  
-  // Then try case-insensitive contains
-  for (const key of Object.keys(sampleTrade)) {
-    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
-      return key;
-    }
-  }
-  
-  return null;
+  return findKey(sampleTrade, [
+    'Size', 'Quantity', 'Amount', 'Volume', 'Shares', 'Contracts', 'Qty',
+    'size', 'qty', 'quantity', 'amount', 'volume', 'position'
+  ]);
 }
 
 function findDurationKey(sampleTrade: TradeDataEntry): string | null {
-  const possibleKeys = [
+  return findKey(sampleTrade, [
     'Duration', 'Time Held', 'Holding Period', 'Hold Time', 'Timeframe',
     'duration', 'held', 'period', 'hold', 'holdtime'
-  ];
-  
-  // First try exact matches
-  for (const key of possibleKeys) {
-    if (key in sampleTrade) return key;
-  }
-  
-  // Then try case-insensitive contains
-  for (const key of Object.keys(sampleTrade)) {
-    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
-      return key;
-    }
-  }
-  
-  return null;
+  ]);
 }
 
 function findDateKey(sampleTrade: TradeDataEntry): string | null {
-  const possibleKeys = [
-    'Date', 'Trade Date', 'Entry Date', 'Open Date', 
-    'date', 'tradedate', 'entrydate', 'opendate', 'Create Time'
-  ];
-  
+  return findKey(sampleTrade, [
+    'Date', 'Trade Date', 'Entry Date', 'Open Date', 'Create Time',
+    'date', 'tradedate', 'entrydate', 'opendate'
+  ], key => !key.toLowerCase().includes('time'));
+}
+
+function findTimeKey(sampleTrade: TradeDataEntry): string | null {
+  return findKey(sampleTrade, [
+    'Time', 'Timestamp', 'Trade Time', 'Entry Time', 'Trade Time(UTC)', 'Create Time',
+    'time', 'timestamp', 'tradetime'
+  ]);
+}
+
+// Generic function to find keys based on a list of possible matches
+function findKey(
+  sampleTrade: TradeDataEntry, 
+  possibleKeys: string[], 
+  additionalCheck?: (key: string) => boolean
+): string | null {
   // First try exact matches
   for (const key of possibleKeys) {
-    if (key in sampleTrade) return key;
-  }
-  
-  // Then try case-insensitive contains
-  for (const key of Object.keys(sampleTrade)) {
-    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase())) && !key.toLowerCase().includes('time')) {
+    if (key in sampleTrade && (!additionalCheck || additionalCheck(key))) {
       return key;
     }
   }
   
-  return null;
-}
-
-function findTimeKey(sampleTrade: TradeDataEntry): string | null {
-  const possibleKeys = [
-    'Time', 'Timestamp', 'Trade Time', 'Entry Time', 'Trade Time(UTC)',
-    'time', 'timestamp', 'tradetime'
-  ];
-  
-  // First try exact matches
-  for (const key of possibleKeys) {
-    if (key in sampleTrade) return key;
-  }
-  
   // Then try case-insensitive contains
   for (const key of Object.keys(sampleTrade)) {
-    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
+    if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase())) && 
+        (!additionalCheck || additionalCheck(key))) {
       return key;
     }
   }
