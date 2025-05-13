@@ -5,9 +5,9 @@ import { TradeDataEntry } from '@/types/dashboard';
 import { extractNumericValue } from '@/utils/dashboardUtils';
 
 interface KeyMetricsProps {
-  tradeData?: TradeDataEntry[]; // Optional
+  tradeData?: TradeDataEntry[];
   tradingStyle: string;
-  winRate?: string; // Fallback props
+  winRate?: string;
   winRateChange?: string;
   totalProfit?: string;
   totalProfitChange?: string;
@@ -23,15 +23,14 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
   winRate: propWinRate = '0%',
   winRateChange = '0%',
   totalProfit: propTotalProfit = '0 USDT',
-  totalProfitChange = '0 USDT',
+  totalProfitChange = '0%',
   riskReward: propRiskReward = 'Undefined',
   riskRewardChange = '0',
   avgDrawdown: propAvgDrawdown = '0%',
   avgDrawdownChange = '0%',
 }) => {
-  // Calculate metrics from tradeData if available
   const calculateMetrics = () => {
-    console.log('KeyMetrics: tradeData received:', tradeData); // Debug log
+    console.log('KeyMetrics: tradeData received:', tradeData);
 
     if (!tradeData.length) {
       console.log('KeyMetrics: No trade data, using prop defaults');
@@ -66,7 +65,7 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
     const losses = tradeData.filter(t => extractNumericValue(t[profitKey]) <= 0);
     const winRate = tradeData.length ? (wins.length / tradeData.length) * 100 : 0;
     const totalProfit = tradeData.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0);
-    const riskReward = wins.length ? (Math.abs(losses.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / losses.length) / (wins.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / wins.length)).toFixed(2) : 'Undefined';
+    const riskReward = wins.length ? `${(Math.abs(losses.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / losses.length) / (wins.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / wins.length)).toFixed(2)}` : 'Undefined';
     const startingBalance = 1000; // Adjust if known
     const cumulativePnl = tradeData.reduce((acc, t) => {
       const profit = extractNumericValue(t[profitKey]);
@@ -74,20 +73,19 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
     }, [0]);
     const drawdown = startingBalance ? (Math.abs(Math.min(...cumulativePnl)) / startingBalance * 100) : 0;
 
-    // Placeholder changes
     const winRateChangeCalc = '0%';
-    const totalProfitChangeCalc = '0 USDT';
+    const totalProfitChangeCalc = '0%';
     const riskRewardChangeCalc = '0';
     const avgDrawdownChangeCalc = '0%';
 
-    console.log('KeyMetrics: Calculated:', { winRate, totalProfit, riskReward, drawdown }); // Debug log
+    console.log('KeyMetrics: Calculated:', { winRate, totalProfit, riskReward, drawdown });
 
     return {
       winRate: `${winRate.toFixed(2)}%`,
       winRateChange: winRateChangeCalc,
-      totalProfit: `${totalProfit.toFixed(2)} USDT`,
+      totalProfit: `${totalProfit < 0 ? '-' : ''}$${Math.abs(totalProfit).toFixed(2)}`, // Match Dashboard format
       totalProfitChange: totalProfitChangeCalc,
-      riskReward,
+      riskReward: wins.length ? `1:${riskReward}` : 'Undefined', // Match Dashboard format
       riskRewardChange: riskRewardChangeCalc,
       avgDrawdown: `${drawdown.toFixed(2)}%`,
       avgDrawdownChange: avgDrawdownChangeCalc,
@@ -105,7 +103,6 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
     avgDrawdownChange,
   } = calculateMetrics();
 
-  // Determine if changes are positive
   const isWinRatePositive = !winRateChange.startsWith('-');
   const isTotalProfitPositive = !totalProfitChange.startsWith('-');
   const isRiskRewardPositive = !riskRewardChange.startsWith('-');
