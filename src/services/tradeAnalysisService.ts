@@ -1,3 +1,4 @@
+
 import { TradeDataEntry } from "@/types/dashboard";
 import { extractNumericValue } from "@/utils/dashboardUtils";
 
@@ -20,6 +21,18 @@ export const calculateWinRate = (tradeData: TradeDataEntry[]): number => {
       const wins = tradeData.filter(trade => {
         const entry = extractNumericValue(trade[entryKey]);
         const exit = extractNumericValue(trade[exitKey]);
+        
+        // Consider side/direction for profit calculation
+        const sideKey = findSideKey(trade);
+        const side = sideKey ? String(trade[sideKey]).toLowerCase() : null;
+        
+        if (side === 'buy') {
+          return exit > entry; // For buy, profit when exit > entry
+        } else if (side === 'sell') {
+          return exit < entry; // For sell, profit when exit < entry
+        }
+        
+        // If side is not found, default comparison
         return !isNaN(entry) && !isNaN(exit) && exit > entry;
       }).length;
       
@@ -93,8 +106,21 @@ export const calculateTotalProfit = (tradeData: TradeDataEntry[]): number => {
         const exit = extractNumericValue(trade[exitKey]);
         const size = sizeKey ? extractNumericValue(trade[sizeKey]) : 1;
         
+        // Consider side/direction for profit calculation
+        const sideKey = findSideKey(trade);
+        const side = sideKey ? String(trade[sideKey]).toLowerCase() : null;
+        
         if (!isNaN(entry) && !isNaN(exit)) {
-          const tradeProfit = (exit - entry) * (isNaN(size) ? 1 : size);
+          let tradeProfit;
+          
+          if (side === 'buy') {
+            tradeProfit = (exit - entry) * (isNaN(size) ? 1 : size);
+          } else if (side === 'sell') {
+            tradeProfit = (entry - exit) * (isNaN(size) ? 1 : size);
+          } else {
+            tradeProfit = (exit - entry) * (isNaN(size) ? 1 : size);
+          }
+          
           totalProfit += tradeProfit;
         }
       });
@@ -181,32 +207,63 @@ export const calculateRiskReward = (tradeData: TradeDataEntry[]): number => {
   if (tradesWithData.length === 0) {
     return 0;
   }
+
+  // Filter trades by side to accurately calculate wins & losses
+  const winningTrades = [];
+  const losingTrades = [];
   
-  const winningTrades = tradesWithData.filter(trade => {
+  for (const trade of tradesWithData) {
     const entry = extractNumericValue(trade[entryKey]);
     const exit = extractNumericValue(trade[exitKey]);
-    return exit > entry;
-  });
-  
-  const losingTrades = tradesWithData.filter(trade => {
-    const entry = extractNumericValue(trade[entryKey]);
-    const exit = extractNumericValue(trade[exitKey]);
-    return exit < entry;
-  });
+    const sideKey = findSideKey(trade);
+    const side = sideKey ? String(trade[sideKey]).toLowerCase() : null;
+    const pnl = extractNumericValue(trade[profitKey]);
+    
+    if (pnl > 0 || 
+        (side === 'buy' && exit > entry) || 
+        (side === 'sell' && exit < entry)) {
+      winningTrades.push(trade);
+    } else {
+      losingTrades.push(trade);
+    }
+  }
   
   if (!winningTrades.length || !losingTrades.length) {
+    console.log("Not enough winning or losing trades after side adjustment");
     return 0;
   }
   
   const avgWin = winningTrades.reduce((sum, trade) => {
+    const pnl = extractNumericValue(trade[profitKey]);
+    if (!isNaN(pnl)) return sum + Math.abs(pnl);
+    
     const entry = extractNumericValue(trade[entryKey]);
     const exit = extractNumericValue(trade[exitKey]);
+    const sideKey = findSideKey(trade);
+    const side = sideKey ? String(trade[sideKey]).toLowerCase() : null;
+    
+    if (side === 'buy') {
+      return sum + Math.abs(exit - entry);
+    } else if (side === 'sell') {
+      return sum + Math.abs(entry - exit);
+    }
     return sum + Math.abs(exit - entry);
   }, 0) / winningTrades.length;
   
   const avgLoss = losingTrades.reduce((sum, trade) => {
+    const pnl = extractNumericValue(trade[profitKey]);
+    if (!isNaN(pnl)) return sum + Math.abs(pnl);
+    
     const entry = extractNumericValue(trade[entryKey]);
     const exit = extractNumericValue(trade[exitKey]);
+    const sideKey = findSideKey(trade);
+    const side = sideKey ? String(trade[sideKey]).toLowerCase() : null;
+    
+    if (side === 'buy') {
+      return sum + Math.abs(entry - exit);
+    } else if (side === 'sell') {
+      return sum + Math.abs(exit - entry);
+    }
     return sum + Math.abs(entry - exit);
   }, 0) / losingTrades.length;
   
@@ -245,6 +302,7 @@ export const calculateAvgDrawdown = (tradeData: TradeDataEntry[]): number => {
   
   let drawdownSum = 0;
   let validTradesCount = 0;
+  let totalTradeValue = 0;
   
   for (const trade of losingTrades) {
     const loss = Math.abs(extractNumericValue(trade[profitKey]));
@@ -258,19 +316,34 @@ export const calculateAvgDrawdown = (tradeData: TradeDataEntry[]): number => {
       if (!isNaN(entry) && !isNaN(size) && entry > 0 && size > 0) {
         const position = entry * size;
         const drawdownPct = (loss / position) * 100;
-        drawdownSum += drawdownPct;
+        totalTradeValue += position;
+        drawdownSum += loss;
         validTradesCount++;
         continue;
       }
     }
     
-    // If we can't calculate percentage, use a default approximation
-    // Assuming average drawdown is around 2-5% of account
-    drawdownSum += Math.min(10, (loss / 100)); // rough estimate, capped at 10%
+    // Add to drawdown sum without percentage calculation
+    drawdownSum += loss;
     validTradesCount++;
   }
   
-  const avgDrawdown = validTradesCount > 0 ? drawdownSum / validTradesCount : 0;
+  // Calculate average drawdown as percentage of total position
+  let avgDrawdown;
+  if (totalTradeValue > 0) {
+    avgDrawdown = (drawdownSum / totalTradeValue) * 100;
+  } else {
+    // If we couldn't calculate percentage accurately, approximate
+    const totalTrades = tradeData.length;
+    const lossPercentage = losingTrades.length / totalTrades;
+    
+    // Use the average loss as a percentage (typical drawdowns are 5-15%)
+    avgDrawdown = lossPercentage * 10;
+  }
+  
+  // Cap at reasonable values
+  avgDrawdown = Math.min(Math.max(avgDrawdown, 1), 20);
+  
   console.log(`Average drawdown calculated: ${avgDrawdown}%`);
   
   return avgDrawdown;
@@ -302,6 +375,16 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
              symbol.includes('busd') || 
              symbol.includes('usdc');
     });
+  }
+  
+  // Check if Symbol Type column explicitly states futures
+  if (typeKey && tradeData.some(trade => {
+    const type = String(trade[typeKey] || '').toLowerCase();
+    return type.includes('perpetual') || 
+           type.includes('futures') || 
+           type.includes('usdt perpetual');
+  })) {
+    isFutures = true;
   }
   
   // Check status/type column for indicators

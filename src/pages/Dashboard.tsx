@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { UserPlan, TradeDataEntry } from '@/types/dashboard';
@@ -41,11 +42,11 @@ const Dashboard = () => {
   const [rawTradeData, setRawTradeData] = useState<TradeDataEntry[]>([]);
   
   // Metrics state
-  const [winRate, setWinRate] = useState({ value: 58.7, change: 4.3 });
-  const [totalProfit, setTotalProfit] = useState({ value: 12837, change: 18.2 });
-  const [riskReward, setRiskReward] = useState({ value: 2.3, change: 0.4 });
-  const [avgDrawdown, setAvgDrawdown] = useState({ value: 4.2, change: -1.1 });
-  const [tradingStyle, setTradingStyle] = useState("Swing Trader");
+  const [winRate, setWinRate] = useState({ value: 0, change: 0 });
+  const [totalProfit, setTotalProfit] = useState({ value: 0, change: 0 });
+  const [riskReward, setRiskReward] = useState({ value: 0, change: 0 });
+  const [avgDrawdown, setAvgDrawdown] = useState({ value: 0, change: 0 });
+  const [tradingStyle, setTradingStyle] = useState("");
   
   // Limit trades based on user plan
   useEffect(() => {
@@ -83,25 +84,31 @@ const Dashboard = () => {
         avgDrawdown: calculatedAvgDrawdown
       });
       
+      // Store previous values for change calculation
+      const prevWinRate = winRate.value;
+      const prevTotalProfit = totalProfit.value;
+      const prevRiskReward = riskReward.value;
+      const prevAvgDrawdown = avgDrawdown.value;
+      
       setWinRate({ 
         value: parseFloat(calculatedWinRate.toFixed(1)), 
-        // For comparison to previous period in a real app
-        change: parseFloat((Math.random() * 10 - 5).toFixed(1)) 
+        // Calculate actual change from previous value if available
+        change: prevWinRate ? parseFloat((calculatedWinRate - prevWinRate).toFixed(1)) : 0
       });
       
       setTotalProfit({ 
-        value: Math.abs(calculatedProfit), 
-        change: parseFloat((Math.random() * 20).toFixed(1))
+        value: calculatedProfit, 
+        change: prevTotalProfit ? parseFloat(((calculatedProfit - prevTotalProfit) / Math.abs(prevTotalProfit) * 100).toFixed(1)) : 0
       });
       
       setRiskReward({ 
         value: parseFloat(calculatedRiskReward.toFixed(1)), 
-        change: parseFloat((Math.random() * 1).toFixed(1))
+        change: prevRiskReward ? parseFloat((calculatedRiskReward - prevRiskReward).toFixed(1)) : 0
       });
       
       setAvgDrawdown({ 
         value: parseFloat(calculatedAvgDrawdown.toFixed(1)), 
-        change: parseFloat((Math.random() * 2 - 1).toFixed(1))
+        change: prevAvgDrawdown ? parseFloat((calculatedAvgDrawdown - prevAvgDrawdown).toFixed(1)) : 0
       });
       
       setTradingStyle(detectedTradingStyle);
@@ -229,8 +236,8 @@ const Dashboard = () => {
         
         {/* Analysis section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <TradingPsychology />
-          <TopTradingHours />
+          <TradingPsychology winRate={winRate.value} totalProfit={totalProfit.value} />
+          <TopTradingHours tradeData={tradeData} hasData={hasUploadedData} />
           <CommunityBenchmark winRate={winRate.value} riskReward={riskReward.value} />
         </div>
 
@@ -247,7 +254,14 @@ const Dashboard = () => {
         <RecentTrades tradeData={tradeData} hasData={hasUploadedData} />
 
         {/* AI Insights */}
-        <AIInsights userPlan={userPlan} tradingStyle={tradingStyle} />
+        <AIInsights 
+          userPlan={userPlan} 
+          tradingStyle={tradingStyle} 
+          tradeData={tradeData}
+          winRate={winRate.value}
+          totalProfit={totalProfit.value}
+          riskReward={riskReward.value}
+        />
       </div>
     </div>
   );
