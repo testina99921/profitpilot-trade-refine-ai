@@ -249,18 +249,16 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium">Trade Distribution</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col items-center">
           {hasData && distributionData.length > 0 && distributionData.some(d => d.value > 0) ? (
-            <div className="h-80">
-              <ChartContainer className="h-full" config={{}}>
+            <div className="h-80 flex flex-col items-center justify-center">
+              <ChartContainer className="h-60 w-full" config={{}}>
                 <ResponsiveContainer width="100%" height="100%">
                   <RechartsPieChart>
                     <Pie
                       data={distributionData}
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -270,12 +268,13 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ tradeData, hasDat
                       ))}
                     </Pie>
                     <Tooltip />
+                    <Legend verticalAlign="bottom" height={36} />
                   </RechartsPieChart>
                 </ResponsiveContainer>
               </ChartContainer>
             </div>
           ) : (
-            <div className="h-80 flex items-center justify-center flex-col">
+            <div className="h-80 flex flex-col items-center justify-center">
               <PieChartIcon className="text-muted-foreground opacity-50 mb-4" />
               <p className="text-muted-foreground">Upload CSV data to see your trade distribution</p>
             </div>
