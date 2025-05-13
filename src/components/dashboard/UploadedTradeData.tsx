@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TradeDataEntry, UserPlan } from '@/types/dashboard';
@@ -47,22 +46,25 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
   
   // Choose the most important columns to display if there are too many
   const getDisplayColumns = () => {
-    // Based on the provided image, prioritize these columns in this order
+    // Prioritize standard column names and the original columns from the CSV
     const priorityKeys = [
-      'Contract', 'Symbol', 'Contracts', 'Direction', 'Closing Direction', 'Side', 
-      'Qty', 'Quantity', 'Size', 'Entry Price', 'Exit Price', 'Closed P&L', 'PnL',
-      'Exit Type', 'Trade Time(UTC)', 'Trade Time', 'Create Time'
+      'Symbol', 'Side', 'Size', 'EntryPrice', 'ExitPrice', 'PnL', 'TradeTime', 'Type',
+      'Contracts', 'Closing Direction', 'Qty', 'Entry Price', 'Exit Price', 'Closed P&L', 
+      'Exit Type', 'Trade Time(UTC+0)', 'Create Time', 'Symbol Type'
     ];
+    
+    // Filter to only include keys that actually exist in the data
+    const availablePriorityKeys = priorityKeys.filter(key => allKeys.includes(key));
     
     // If we have 6 or fewer columns, show all of them
     if (allKeys.length <= 6) return allKeys;
     
     // Otherwise, pick the most important ones first, then fill with others
-    const selectedKeys = [];
+    let selectedKeys = [];
     
     // First add any priority keys that exist
-    for (const key of priorityKeys) {
-      if (allKeys.includes(key) && selectedKeys.length < 6) {
+    for (const key of availablePriorityKeys) {
+      if (selectedKeys.length < 6) {
         selectedKeys.push(key);
       }
     }
@@ -87,12 +89,26 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
     if (!value) return '';
     
     // Special handling for Symbol or Contract column
-    if (key === 'Symbol' || key === 'Contract' || key === 'Contracts') {
+    if (key === 'Symbol' || key === 'Contracts') {
+      return value;
+    }
+    
+    // Handle BUY/SELL direction
+    if (key === 'Side' || key === 'Direction' || key === 'Closing Direction') {
+      const direction = value.toLowerCase();
+      if (direction === 'buy') {
+        return <span className="text-green-500">BUY</span>;
+      } else if (direction === 'sell') {
+        return <span className="text-red-500">SELL</span>;
+      }
       return value;
     }
     
     // Handle price columns
-    if (key.toLowerCase().includes('price') || key === 'Closed P&L' || key.toLowerCase().includes('p&l')) {
+    if (key.toLowerCase().includes('price') || 
+        key === 'PnL' || 
+        key === 'Closed P&L' || 
+        key.toLowerCase().includes('p&l')) {
       // Format as currency if it's a number
       const num = parseFloat(value.replace(/[^0-9.-]/g, ''));
       if (!isNaN(num)) {
@@ -105,7 +121,11 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
     }
     
     // Handle date columns
-    if (key.toLowerCase().includes('time') || key.toLowerCase().includes('date')) {
+    if (key.toLowerCase().includes('time') || 
+        key.toLowerCase().includes('date') || 
+        key === 'TradeTime' || 
+        key === 'Trade Time(UTC+0)' || 
+        key === 'Create Time') {
       try {
         const date = new Date(value);
         if (!isNaN(date.getTime())) {

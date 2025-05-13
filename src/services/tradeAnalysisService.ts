@@ -1,4 +1,3 @@
-
 import { TradeDataEntry } from "@/types/dashboard";
 import { extractNumericValue } from "@/utils/dashboardUtils";
 
@@ -437,14 +436,14 @@ function findProfitLossKey(sampleTrade: TradeDataEntry): string | null {
 function findEntryKey(sampleTrade: TradeDataEntry): string | null {
   return findKey(sampleTrade, [
     'Entry', 'Entry Price', 'Open', 'Open Price', 'Buy', 'Buy Price',
-    'entry', 'entryprice', 'open', 'openprice'
+    'entry', 'entryprice', 'open', 'openprice', 'EntryPrice'
   ]);
 }
 
 function findExitKey(sampleTrade: TradeDataEntry): string | null {
   return findKey(sampleTrade, [
     'Exit', 'Exit Price', 'Close', 'Close Price', 'Sell', 'Sell Price',
-    'exit', 'exitprice', 'close', 'closeprice'
+    'exit', 'exitprice', 'close', 'closeprice', 'ExitPrice'
   ]);
 }
 
@@ -457,14 +456,14 @@ function findSizeKey(sampleTrade: TradeDataEntry): string | null {
 
 function findSideKey(sampleTrade: TradeDataEntry): string | null {
   return findKey(sampleTrade, [
-    'Side', 'Direction', 'Buy/Sell', 'Long/Short', 'Order Side',
+    'Side', 'Direction', 'Buy/Sell', 'Long/Short', 'Order Side', 'Closing Direction',
     'side', 'direction', 'buysell', 'longshort'
   ]);
 }
 
 function findStatusKey(sampleTrade: TradeDataEntry): string | null {
   return findKey(sampleTrade, [
-    'Status', 'Trade Status', 'Result', 'Outcome',
+    'Status', 'Trade Status', 'Result', 'Outcome', 'Exit Type',
     'status', 'result', 'tradestatus'
   ]);
 }
@@ -479,13 +478,13 @@ function findDurationKey(sampleTrade: TradeDataEntry): string | null {
 function findDateKey(sampleTrade: TradeDataEntry): string | null {
   return findKey(sampleTrade, [
     'Date', 'Trade Date', 'Entry Date', 'Open Date', 'Create Time',
-    'date', 'tradedate', 'entrydate', 'opendate'
-  ], key => !key.toLowerCase().includes('time'));
+    'date', 'tradedate', 'entrydate', 'opendate', 'Trade Time(UTC+0)'
+  ], key => !key.toLowerCase().includes('time') || key === 'Create Time' || key === 'Trade Time(UTC+0)');
 }
 
 function findTimeKey(sampleTrade: TradeDataEntry): string | null {
   return findKey(sampleTrade, [
-    'Time', 'Timestamp', 'Trade Time', 'Entry Time', 'Trade Time(UTC)', 'Create Time',
+    'Time', 'Timestamp', 'Trade Time', 'Entry Time', 'Trade Time(UTC+0)', 'Create Time',
     'time', 'timestamp', 'tradetime'
   ]);
 }
@@ -502,6 +501,11 @@ function findKey(
       return key;
     }
   }
+  
+  // Then try standardized column names
+  if ('Symbol' in sampleTrade && possibleKeys.includes('Contract')) return 'Symbol';
+  if ('Side' in sampleTrade && possibleKeys.includes('Direction')) return 'Side';
+  if ('PnL' in sampleTrade && possibleKeys.includes('Closed P&L')) return 'PnL';
   
   // Then try case-insensitive contains
   for (const key of Object.keys(sampleTrade)) {

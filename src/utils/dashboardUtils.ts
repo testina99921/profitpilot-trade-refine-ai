@@ -47,21 +47,67 @@ export const isFeatureAvailable = (feature: string, userPlan: UserPlan): boolean
 
 // Enhanced CSV parser with better handling of exchange data formats
 export const parseCSV = (text: string) => {
-  // Split by newlines and filter out empty lines
-  const lines = text.split('\n').filter(line => line.trim() !== '');
+  console.log("Parsing CSV data:", text.substring(0, 200) + "...");
+  
+  // Remove any UTF-8 BOM and split by newlines
+  const cleanText = text.replace(/^\uFEFF/, '');
+  const lines = cleanText.split('\n').filter(line => line.trim() !== '');
   
   if (lines.length === 0) return [];
   
-  // Identify delimiter (comma or tab)
-  const delimiter = lines[0].includes(',') ? ',' : '\t';
+  // Skip any non-header rows at the beginning (like UID: 8155223)
+  let startIndex = 0;
+  for (let i = 0; i < Math.min(5, lines.length); i++) {
+    if (lines[i].includes('Contracts') && 
+        lines[i].includes('Direction') && 
+        lines[i].includes('Price')) {
+      startIndex = i;
+      break;
+    } else if (lines[i].includes('UID:')) {
+      // Skip this line but don't set it as the header row
+      continue;
+    }
+  }
   
-  // Handle headers - first row contains column names
-  const headers = lines[0].split(delimiter).map(header => header.trim());
+  // Identify delimiter (tab, comma, or multiple spaces)
+  let delimiter = '\t';
+  const firstLine = lines[startIndex];
+  if (firstLine.includes(',') && !firstLine.includes('\t')) {
+    delimiter = ',';
+  } else if (!firstLine.includes('\t') && /\s{2,}/.test(firstLine)) {
+    // If no tabs but has multiple consecutive spaces, split by multiple spaces
+    const headers = firstLine.trim().split(/\s{2,}/).map(h => h.trim());
+    
+    // Process the data rows with space delimiter
+    const parsedData = lines.slice(startIndex + 1)
+      .map(line => {
+        // Split by position based on headers
+        const entry: Record<string, string> = {};
+        let currentPos = 0;
+        
+        headers.forEach(header => {
+          const nextHeaderPos = line.indexOf('  ', currentPos);
+          if (nextHeaderPos === -1) {
+            entry[header] = line.substring(currentPos).trim();
+          } else {
+            entry[header] = line.substring(currentPos, nextHeaderPos).trim();
+            currentPos = nextHeaderPos + 2;
+          }
+        });
+        
+        return entry;
+      });
+    
+    // Map column names and process the data
+    return processTradeData(parsedData);
+  }
   
+  // Use the detected delimiter to split headers
+  const headers = lines[startIndex].split(delimiter).map(header => header.trim());
   console.log("CSV Headers detected:", headers);
   
   // Process the data rows
-  const parsedData = lines.slice(1)
+  const parsedData = lines.slice(startIndex + 1)
     .map(line => {
       const values = line.split(delimiter);
       const entry: Record<string, string> = {}; 
@@ -79,43 +125,64 @@ export const parseCSV = (text: string) => {
       const hasContent = Object.values(entry).some(val => val !== '');
       const isNotHeader = !Object.keys(entry).some(key => 
         key.toLowerCase() === 'uid' || 
-        key.toLowerCase() === 'contracts'
+        key.toLowerCase() === 'contracts' && 
+        Object.values(entry).some(val => val.toLowerCase() === 'contracts')
       );
       return hasContent && isNotHeader;
     });
   
-  // Map column names for consistent access
-  return parsedData.map(entry => {
+  // Map column names and process the data
+  return processTradeData(parsedData);
+};
+
+// Process and standardize the trade data
+const processTradeData = (rawData: Record<string, string>[]) => {
+  console.log("Processing trade data, first entry:", rawData[0]);
+  
+  return rawData.map(entry => {
     const processedEntry: Record<string, string> = {...entry};
     
-    // Common mappings based on the CSV format shown in the image
-    if ('Contract' in processedEntry && !('Symbol' in processedEntry)) {
-      processedEntry['Symbol'] = processedEntry['Contract'];
-    } else if ('Contracts' in processedEntry && !('Symbol' in processedEntry)) {
+    // Standard column name mapping for consistency
+    const columnMappings: Record<string, string[]> = {
+      'Symbol': ['Contract', 'Contracts', 'Symbol', 'Ticker', 'Pair'],
+      'Side': ['Direction', 'Closing Direction', 'Side', 'Buy/Sell', 'Trade Direction'],
+      'Size': ['Qty', 'Quantity', 'Size', 'Amount', 'Volume'],
+      'EntryPrice': ['Entry Price', 'EntryPrice', 'Open', 'Open Price'],
+      'ExitPrice': ['Exit Price', 'ExitPrice', 'Close', 'Close Price'],
+      'PnL': ['Closed P&L', 'P&L', 'PnL', 'Profit/Loss', 'Realized PnL'],
+      'TradeTime': ['Trade Time(UTC+0)', 'Trade Time', 'Time', 'Date', 'Create Time'],
+      'Type': ['Exit Type', 'Type', 'Order Type', 'Symbol Type']
+    };
+    
+    // Apply the mappings - for each standard field, look for any matching column
+    Object.entries(columnMappings).forEach(([standardKey, possibleKeys]) => {
+      // Find the first matching key in the entry
+      const matchingKey = possibleKeys.find(key => key in processedEntry);
+      if (matchingKey) {
+        processedEntry[standardKey] = processedEntry[matchingKey];
+      }
+    });
+    
+    // Ensure Symbol is available (extremely important for later calculations)
+    if (!('Symbol' in processedEntry) && 'Contracts' in processedEntry) {
       processedEntry['Symbol'] = processedEntry['Contracts'];
     }
     
-    if ('Direction' in processedEntry && !('Side' in processedEntry)) {
-      processedEntry['Side'] = processedEntry['Direction'];
-    } else if ('Closing Direction' in processedEntry && !('Side' in processedEntry)) {
+    // Ensure Side is properly mapped
+    if ('Closing Direction' in processedEntry && !('Side' in processedEntry)) {
       processedEntry['Side'] = processedEntry['Closing Direction'];
     }
     
-    if ('Qty' in processedEntry && !('Size' in processedEntry)) {
-      processedEntry['Size'] = processedEntry['Qty'];
-      processedEntry['Quantity'] = processedEntry['Qty'];
+    // Properly format PnL value
+    if ('PnL' in processedEntry || 'Closed P&L' in processedEntry) {
+      const pnlKey = 'PnL' in processedEntry ? 'PnL' : 'Closed P&L';
+      const pnlValue = parseFloat(processedEntry[pnlKey].replace(/[^\d.-]/g, ''));
+      if (!isNaN(pnlValue)) {
+        processedEntry['PnL'] = pnlValue.toString();
+      }
     }
     
-    if ('Closed P&L' in processedEntry && !('PnL' in processedEntry)) {
-      processedEntry['PnL'] = processedEntry['Closed P&L'];
-    }
-    
-    if ('Trade Time(UTC)' in processedEntry && !('Trade Time' in processedEntry)) {
-      processedEntry['Trade Time'] = processedEntry['Trade Time(UTC)'];
-    }
-    
-    console.log("Processed entry:", processedEntry);
-    
+    console.log("Processed trade entry:", processedEntry);
     return processedEntry;
   });
 };
