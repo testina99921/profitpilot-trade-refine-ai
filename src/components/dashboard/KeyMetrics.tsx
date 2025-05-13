@@ -46,9 +46,15 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
       };
     }
 
-    const profitKey = Object.keys(tradeData[0]).find(k => k.toLowerCase().includes('pnl') || k.toLowerCase().includes('profit'));
+    // Search for profit key, prioritizing 'Closed P&L'
+    const profitKey = Object.keys(tradeData[0]).find(k => 
+      k === 'Closed P&L' || 
+      k === 'Closed PnL' || 
+      k.toLowerCase().includes('pnl') || 
+      k.toLowerCase().includes('profit')
+    );
     if (!profitKey) {
-      console.log('KeyMetrics: No profit key found, using prop defaults');
+      console.log('KeyMetrics: Profit key not found. Available keys:', Object.keys(tradeData[0]));
       return {
         winRate: propWinRate,
         winRateChange,
@@ -61,11 +67,24 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
       };
     }
 
-    const wins = tradeData.filter(t => extractNumericValue(t[profitKey]) > 0);
+    console.log('KeyMetrics: Using profit key:', profitKey);
+    console.log('KeyMetrics: Sample P&L value:', tradeData[0][profitKey]);
+
+    const wins = tradeData.filter(t => {
+      const value = extractNumericValue(t[profitKey]);
+      console.log(`Trade P&L: ${t[profitKey]} -> Parsed: ${value}`);
+      return value > 0;
+    });
     const losses = tradeData.filter(t => extractNumericValue(t[profitKey]) <= 0);
     const winRate = tradeData.length ? (wins.length / tradeData.length) * 100 : 0;
-    const totalProfit = tradeData.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0);
-    const riskReward = wins.length ? `${(Math.abs(losses.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / losses.length) / (wins.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / wins.length)).toFixed(2)}` : 'Undefined';
+    const totalProfit = tradeData.reduce((sum, t) => {
+      const value = extractNumericValue(t[profitKey]);
+      return sum + (isNaN(value) ? 0 : value);
+    }, 0);
+    const riskReward = wins.length ? 
+      `1:${(Math.abs(losses.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / losses.length) / 
+            (wins.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / wins.length)).toFixed(2)}` : 
+      'Undefined';
     const startingBalance = 1000; // Adjust if known
     const cumulativePnl = tradeData.reduce((acc, t) => {
       const profit = extractNumericValue(t[profitKey]);
@@ -83,9 +102,9 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
     return {
       winRate: `${winRate.toFixed(2)}%`,
       winRateChange: winRateChangeCalc,
-      totalProfit: `${totalProfit < 0 ? '-' : ''}$${Math.abs(totalProfit).toFixed(2)}`, // Match Dashboard format
+      totalProfit: `${totalProfit < 0 ? '-' : ''}$${Math.abs(totalProfit).toFixed(2)}`,
       totalProfitChange: totalProfitChangeCalc,
-      riskReward: wins.length ? `1:${riskReward}` : 'Undefined', // Match Dashboard format
+      riskReward,
       riskRewardChange: riskRewardChangeCalc,
       avgDrawdown: `${drawdown.toFixed(2)}%`,
       avgDrawdownChange: avgDrawdownChangeCalc,
