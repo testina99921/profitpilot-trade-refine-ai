@@ -1,3 +1,4 @@
+
 import { TradeDataEntry } from "@/types/dashboard";
 import { extractNumericValue } from "@/utils/dashboardUtils";
 
@@ -281,7 +282,7 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
   if (!tradeData.length) return "Undefined";
   
   console.log("Determining trading style from:", tradeData);
-  
+
   // Check if we have a column that indicates the market type (spot, futures, etc)
   const typeKey = findKey(tradeData[0], [
     'Market Type', 'Type', 'Symbol Type', 'Product', 'market', 'type', 'product'
@@ -317,6 +318,9 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
              status.includes('futures');
     });
   }
+  
+  // Define hasLeveragedTrades based on isLeverage or isFutures
+  const hasLeveragedTrades = isLeverage || isFutures;
   
   // Look for time-based columns to determine trading style
   const durationKey = findDurationKey(tradeData[0]);
