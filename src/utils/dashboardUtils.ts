@@ -1,4 +1,3 @@
-
 import { UserPlan } from "../types/dashboard";
 
 // Get available date ranges based on plan
@@ -48,12 +47,15 @@ export const isFeatureAvailable = (feature: string, userPlan: UserPlan): boolean
 
 // Enhanced CSV parser with better handling of exchange data formats
 export const parseCSV = (text: string) => {
+  // Split by newlines and filter out empty lines
   const lines = text.split('\n').filter(line => line.trim() !== '');
   
   if (lines.length === 0) return [];
   
   // Identify delimiter (comma or tab)
   const delimiter = lines[0].includes(',') ? ',' : '\t';
+  
+  // Handle headers - first row contains column names
   const headers = lines[0].split(delimiter).map(header => header.trim());
   
   console.log("CSV Headers detected:", headers);
@@ -62,7 +64,7 @@ export const parseCSV = (text: string) => {
   const parsedData = lines.slice(1)
     .map(line => {
       const values = line.split(delimiter);
-      const entry: Record<string, string> = {}; // Define entry as a Record<string, string> to allow any string keys
+      const entry: Record<string, string> = {}; 
       
       headers.forEach((header, index) => {
         if (index < values.length) {
@@ -75,51 +77,44 @@ export const parseCSV = (text: string) => {
     .filter(entry => {
       // Filter out empty entries or header repeats
       const hasContent = Object.values(entry).some(val => val !== '');
-      const isNotHeader = Object.keys(entry).some(key => 
-        key !== 'Symbol Type' && 
-        key !== 'Exit Price' && 
-        key !== 'Contract' &&
-        key !== 'Direction' &&
-        key !== 'Quantity'
+      const isNotHeader = !Object.keys(entry).some(key => 
+        key.toLowerCase() === 'uid' || 
+        key.toLowerCase() === 'contracts'
       );
       return hasContent && isNotHeader;
     });
   
-  // Clean up and standardize column names
+  // Map column names for consistent access
   return parsedData.map(entry => {
     const processedEntry: Record<string, string> = {...entry};
     
-    // Handle Contract/Symbol field
+    // Common mappings based on the CSV format shown in the image
     if ('Contract' in processedEntry && !('Symbol' in processedEntry)) {
       processedEntry['Symbol'] = processedEntry['Contract'];
-    } else if ('Symbol' in processedEntry && !('Contract' in processedEntry)) {
-      processedEntry['Contract'] = processedEntry['Symbol'];
+    } else if ('Contracts' in processedEntry && !('Symbol' in processedEntry)) {
+      processedEntry['Symbol'] = processedEntry['Contracts'];
     }
     
-    // Handle Direction/Side field
     if ('Direction' in processedEntry && !('Side' in processedEntry)) {
       processedEntry['Side'] = processedEntry['Direction'];
-    } else if ('Side' in processedEntry && !('Direction' in processedEntry)) {
-      processedEntry['Direction'] = processedEntry['Side'];
+    } else if ('Closing Direction' in processedEntry && !('Side' in processedEntry)) {
+      processedEntry['Side'] = processedEntry['Closing Direction'];
     }
     
-    // Handle Quantity/Size field
-    if ('Quantity' in processedEntry && !('Size' in processedEntry)) {
-      processedEntry['Size'] = processedEntry['Quantity'];
-    } else if ('Size' in processedEntry && !('Quantity' in processedEntry)) {
-      processedEntry['Quantity'] = processedEntry['Size'];
+    if ('Qty' in processedEntry && !('Size' in processedEntry)) {
+      processedEntry['Size'] = processedEntry['Qty'];
+      processedEntry['Quantity'] = processedEntry['Qty'];
     }
     
-    // Clean up symbol format if it contains commas
-    if (processedEntry['Symbol'] && processedEntry['Symbol'].includes(',')) {
-      const parts = processedEntry['Symbol'].split(',');
-      processedEntry['Symbol'] = parts[0]; // Keep only the ticker part
-      
-      // If we have side information in the symbol field, extract it
-      if (parts.length > 1 && !processedEntry['Side']) {
-        processedEntry['Side'] = parts[1];
-      }
+    if ('Closed P&L' in processedEntry && !('PnL' in processedEntry)) {
+      processedEntry['PnL'] = processedEntry['Closed P&L'];
     }
+    
+    if ('Trade Time(UTC)' in processedEntry && !('Trade Time' in processedEntry)) {
+      processedEntry['Trade Time'] = processedEntry['Trade Time(UTC)'];
+    }
+    
+    console.log("Processed entry:", processedEntry);
     
     return processedEntry;
   });
@@ -132,22 +127,20 @@ export const extractCleanSymbol = (symbolText: string): string => {
   // Remove common suffixes and prefixes
   let cleaned = symbolText.trim();
   
-  // If it contains comma, take first part (e.g., "BTCUSDT,sell" -> "BTCUSDT")
-  if (cleaned.includes(',')) {
-    cleaned = cleaned.split(',')[0];
-  }
+  // For crypto symbols like BTCUSDT, extract the base symbol
+  const commonSuffixes = ['USDT', 'USD', 'BUSD', 'USDC', 'PERP'];
   
-  // Extract the base symbol from pairs like BTCUSDT -> BTC
-  const commonPairs = ['USDT', 'USD', 'BTC', 'ETH', 'BUSD', 'USDC'];
-  for (const pair of commonPairs) {
-    if (cleaned.endsWith(pair)) {
-      cleaned = cleaned.slice(0, -pair.length);
+  for (const suffix of commonSuffixes) {
+    if (cleaned.endsWith(suffix)) {
+      cleaned = cleaned.slice(0, -suffix.length);
       break;
     }
   }
   
-  // Make it more readable for UI display
-  if (cleaned === 'AR') return 'AR';
+  // Handle special case for perpetual futures naming
+  if (cleaned === 'AR' || cleaned === '1000PEPE') {
+    return cleaned;
+  }
   
   return cleaned || 'Unknown';
 };

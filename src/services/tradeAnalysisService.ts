@@ -293,7 +293,7 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
   let isLeverage = false;
   
   // Check the Symbol column for indicators of market type
-  const symbolKey = findKey(tradeData[0], ['Symbol', 'Pair', 'Market', 'symbol', 'pair', 'market']);
+  const symbolKey = findKey(tradeData[0], ['Symbol', 'Contract', 'Contracts', 'Pair', 'Market', 'symbol', 'pair', 'market']);
   if (symbolKey) {
     // Check if any symbol contains indicators of futures/perpetual trading
     isFutures = tradeData.some(trade => {
@@ -306,7 +306,7 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
   }
   
   // Check status/type column for indicators
-  const statusKey = findKey(tradeData[0], ['Status', 'Trade Type', 'status', 'type']);
+  const statusKey = findKey(tradeData[0], ['Status', 'Exit Type', 'Trade Type', 'status', 'type']);
   if (statusKey) {
     // Check for indicators in status
     isLeverage = tradeData.some(trade => {
@@ -409,7 +409,7 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
   }
   
   // If all else fails, determine based on what we know
-  if (isLeverage || isFutures) {
+  if (hasLeveragedTrades) {
     if (tradeData.length > 20) {
       return "Day Futures Trader";
     } else {

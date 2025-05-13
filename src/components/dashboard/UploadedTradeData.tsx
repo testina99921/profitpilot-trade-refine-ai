@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TradeDataEntry, UserPlan } from '@/types/dashboard';
 import { ArrowUpRight } from 'lucide-react';
-import { extractCleanSymbol } from '@/utils/dashboardUtils';
+import { extractCleanSymbol, extractNumericValue } from '@/utils/dashboardUtils';
 
 interface UploadedTradeDataProps {
   tradeData: TradeDataEntry[];
@@ -40,17 +40,18 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
     );
   }
 
+  console.log("Trade data in UploadedTradeData:", tradeData);
+  
   // Process the columns to display
-  const allKeys = Object.keys(tradeData[0]);
+  const allKeys = Object.keys(tradeData[0] || {});
   
   // Choose the most important columns to display if there are too many
   const getDisplayColumns = () => {
-    // Based on provided data sample, prioritize these columns in this order
+    // Based on the provided image, prioritize these columns in this order
     const priorityKeys = [
-      'Contract', 'Direction', 'Quantity', 'Entry Price', 'Exit Price', 'Closed P&L',
-      'Trade Time (UTC+0)', 'Create Time', 'Symbol Type', 'Exit Type',
-      // Fallbacks for other CSV formats
-      'Symbol', 'Side', 'Size', 'Contracts'
+      'Contract', 'Symbol', 'Contracts', 'Direction', 'Closing Direction', 'Side', 
+      'Qty', 'Quantity', 'Size', 'Entry Price', 'Exit Price', 'Closed P&L', 'PnL',
+      'Exit Type', 'Trade Time(UTC)', 'Trade Time', 'Create Time'
     ];
     
     // If we have 6 or fewer columns, show all of them
@@ -79,14 +80,15 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
   };
   
   const displayColumns = getDisplayColumns();
+  console.log("Display columns:", displayColumns);
 
   // Function to format cell value based on column name
   const formatCellValue = (key: string, value: string) => {
     if (!value) return '';
     
     // Special handling for Symbol or Contract column
-    if (key === 'Symbol' || key === 'Contract') {
-      return extractCleanSymbol(value);
+    if (key === 'Symbol' || key === 'Contract' || key === 'Contracts') {
+      return value;
     }
     
     // Handle price columns
