@@ -1,4 +1,3 @@
-
 import { TradeDataEntry } from "@/types/dashboard";
 import { extractNumericValue } from "@/utils/dashboardUtils";
 
@@ -8,10 +7,52 @@ export const calculateWinRate = (tradeData: TradeDataEntry[]): number => {
   
   console.log("Calculating win rate from:", tradeData);
   
-  // Find the profit/loss column
+  // Find the profit/loss column - try all possible naming conventions
   const profitKey = findProfitLossKey(tradeData[0]);
   if (!profitKey) {
-    console.log("No profit/loss column found for win rate calculation");
+    console.log("No profit/loss column found, trying to derive from entry/exit prices");
+    
+    // Try to calculate from entry/exit prices
+    const entryKey = findEntryKey(tradeData[0]);
+    const exitKey = findExitKey(tradeData[0]);
+    
+    if (entryKey && exitKey) {
+      const wins = tradeData.filter(trade => {
+        const entry = extractNumericValue(trade[entryKey]);
+        const exit = extractNumericValue(trade[exitKey]);
+        return !isNaN(entry) && !isNaN(exit) && exit > entry;
+      }).length;
+      
+      const winRate = (wins / tradeData.length) * 100;
+      console.log(`Win rate calculated from prices: ${winRate}% (${wins}/${tradeData.length})`);
+      return winRate;
+    }
+    
+    // If we can't find entry/exit either, try to use side and P&L
+    const sideKey = findSideKey(tradeData[0]);
+    const statusKey = findStatusKey(tradeData[0]);
+    
+    if ((sideKey || statusKey)) {
+      let wins = 0;
+      
+      tradeData.forEach(trade => {
+        const side = sideKey ? String(trade[sideKey] || '').toLowerCase() : '';
+        const status = statusKey ? String(trade[statusKey] || '').toLowerCase() : '';
+        
+        // Check various conditions that might indicate a winning trade
+        if ((side.includes('buy') && !status.includes('bust')) ||
+            (side.includes('long') && !status.includes('bust')) ||
+            (status.includes('win')) ||
+            (status.includes('profit'))) {
+          wins++;
+        }
+      });
+      
+      const winRate = (wins / tradeData.length) * 100;
+      console.log(`Win rate calculated from side/status: ${winRate}% (${wins}/${tradeData.length})`);
+      return winRate;
+    }
+    
     return 0;
   }
   
@@ -37,7 +78,31 @@ export const calculateTotalProfit = (tradeData: TradeDataEntry[]): number => {
   // Find the profit/loss column
   const profitKey = findProfitLossKey(tradeData[0]);
   if (!profitKey) {
-    console.log("No profit/loss column found for profit calculation");
+    console.log("No profit/loss column found for profit calculation, trying entry/exit");
+    
+    // Try to calculate from entry/exit prices
+    const entryKey = findEntryKey(tradeData[0]);
+    const exitKey = findExitKey(tradeData[0]);
+    const sizeKey = findSizeKey(tradeData[0]);
+    
+    if (entryKey && exitKey) {
+      let totalProfit = 0;
+      
+      tradeData.forEach(trade => {
+        const entry = extractNumericValue(trade[entryKey]);
+        const exit = extractNumericValue(trade[exitKey]);
+        const size = sizeKey ? extractNumericValue(trade[sizeKey]) : 1;
+        
+        if (!isNaN(entry) && !isNaN(exit)) {
+          const tradeProfit = (exit - entry) * (isNaN(size) ? 1 : size);
+          totalProfit += tradeProfit;
+        }
+      });
+      
+      console.log(`Total profit calculated from prices: ${totalProfit}`);
+      return totalProfit;
+    }
+    
     return 0;
   }
   
@@ -217,30 +282,48 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
   
   console.log("Determining trading style from:", tradeData);
   
-  // Look for time-based columns to determine trading style
-  const durationKey = findDurationKey(tradeData[0]);
-  const dateKey = findDateKey(tradeData[0]);
-  const timeKey = findTimeKey(tradeData[0]);
+  // Check if we have a column that indicates the market type (spot, futures, etc)
+  const typeKey = findKey(tradeData[0], [
+    'Market Type', 'Type', 'Symbol Type', 'Product', 'market', 'type', 'product'
+  ]);
   
-  // Check if we have a status column that might indicate trade type (e.g., "BustTrade")
-  let hasLeveragedTrades = false;
-  const statusKey = findKey(tradeData[0], ['Status', 'Trade Type', 'Type', 'status', 'type']);
+  let isFutures = false;
+  let isSpot = false;
+  let isLeverage = false;
   
+  // Check the Symbol column for indicators of market type
+  const symbolKey = findKey(tradeData[0], ['Symbol', 'Pair', 'Market', 'symbol', 'pair', 'market']);
+  if (symbolKey) {
+    // Check if any symbol contains indicators of futures/perpetual trading
+    isFutures = tradeData.some(trade => {
+      const symbol = String(trade[symbolKey] || '').toLowerCase();
+      return symbol.includes('perp') || 
+             symbol.includes('usdt') ||
+             symbol.includes('busd') || 
+             symbol.includes('usdc');
+    });
+  }
+  
+  // Check status/type column for indicators
+  const statusKey = findKey(tradeData[0], ['Status', 'Trade Type', 'status', 'type']);
   if (statusKey) {
-    // Check if we have any status values indicating leveraged trading
-    hasLeveragedTrades = tradeData.some(trade => {
+    // Check for indicators in status
+    isLeverage = tradeData.some(trade => {
       const status = String(trade[statusKey] || '').toLowerCase();
       return status.includes('bust') || 
              status.includes('liquidat') || 
-             status.includes('leverag') ||
+             status.includes('leverage') ||
              status.includes('perpetual') ||
              status.includes('futures');
     });
   }
   
+  // Look for time-based columns to determine trading style
+  const durationKey = findDurationKey(tradeData[0]);
+  const dateKey = findDateKey(tradeData[0]);
+  const timeKey = findTimeKey(tradeData[0]);
+  
   if (durationKey) {
-    console.log(`Using ${durationKey} column for trading style determination`);
-    
     // Calculate trading style based on holding duration
     const holdingTimes = tradeData
       .filter(trade => trade[durationKey])
@@ -321,11 +404,20 @@ export const determineTradingStyle = (tradeData: TradeDataEntry[]): string => {
     }
   }
   
-  // If all else fails, determine by trade count
+  // If all else fails, determine based on what we know
+  if (isLeverage || isFutures) {
+    if (tradeData.length > 20) {
+      return "Day Futures Trader";
+    } else {
+      return "Position Futures Trader";
+    }
+  }
+  
+  // Default for spot trading
   if (tradeData.length > 20) {
-    return hasLeveragedTrades ? 'Day Futures Trader' : 'Day Trader';
+    return "Day Trader";
   } else {
-    return hasLeveragedTrades ? 'Position Trader' : 'Swing Trader';
+    return "Swing Trader";
   }
 };
 
@@ -356,6 +448,20 @@ function findSizeKey(sampleTrade: TradeDataEntry): string | null {
   return findKey(sampleTrade, [
     'Size', 'Quantity', 'Amount', 'Volume', 'Shares', 'Contracts', 'Qty',
     'size', 'qty', 'quantity', 'amount', 'volume', 'position'
+  ]);
+}
+
+function findSideKey(sampleTrade: TradeDataEntry): string | null {
+  return findKey(sampleTrade, [
+    'Side', 'Direction', 'Buy/Sell', 'Long/Short', 'Order Side',
+    'side', 'direction', 'buysell', 'longshort'
+  ]);
+}
+
+function findStatusKey(sampleTrade: TradeDataEntry): string | null {
+  return findKey(sampleTrade, [
+    'Status', 'Trade Status', 'Result', 'Outcome',
+    'status', 'result', 'tradestatus'
   ]);
 }
 

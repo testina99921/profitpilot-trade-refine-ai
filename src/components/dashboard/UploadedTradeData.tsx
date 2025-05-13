@@ -84,6 +84,19 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
       return extractCleanSymbol(value);
     }
     
+    // Handle other columns that might need formatting
+    if (key.toLowerCase().includes('price') || key.toLowerCase().includes('p&l')) {
+      // Format as currency if it's a number
+      const num = parseFloat(value.replace(/[^0-9.-]/g, ''));
+      if (!isNaN(num)) {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 2
+        }).format(num);
+      }
+    }
+    
     return String(value || '');
   };
 
