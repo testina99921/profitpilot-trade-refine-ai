@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { UserPlan, TradeDataEntry } from '@/types/dashboard';
@@ -23,12 +22,12 @@ import UploadedTradeData from '@/components/dashboard/UploadedTradeData';
 import RecentTrades from '@/components/dashboard/RecentTrades';
 import AIInsights from '@/components/dashboard/AIInsights';
 
-// Mock user plan - in a real app, this would come from authentication
+// Mock user plan
 const userPlan: UserPlan = "free"; // Options: "free", "pro", "advanced", "elite"
 
 // Define trade limits per plan
 const TRADE_LIMITS: Record<UserPlan, number> = {
-  "free": 7,  // Updated from 5 to 7 as specified
+  "free": 7,
   "pro": 200,
   "advanced": 1000,
   "elite": 3000
@@ -41,7 +40,7 @@ const Dashboard = () => {
   const [hasUploadedData, setHasUploadedData] = useState(false);
   const [rawTradeData, setRawTradeData] = useState<TradeDataEntry[]>([]);
   
-  // Metrics state
+  // Metrics state (still needed for other components)
   const [winRate, setWinRate] = useState({ value: 0, change: 0 });
   const [totalProfit, setTotalProfit] = useState({ value: 0, change: 0 });
   const [riskReward, setRiskReward] = useState({ value: 0, change: 0 });
@@ -65,7 +64,7 @@ const Dashboard = () => {
     }
   }, [rawTradeData, userPlan]);
 
-  // Update metrics when trade data changes
+  // Update metrics for other components
   useEffect(() => {
     if (tradeData.length > 0) {
       console.log("Analyzing trade data:", tradeData);
@@ -84,7 +83,6 @@ const Dashboard = () => {
         avgDrawdown: calculatedAvgDrawdown
       });
       
-      // Store previous values for change calculation
       const prevWinRate = winRate.value;
       const prevTotalProfit = totalProfit.value;
       const prevRiskReward = riskReward.value;
@@ -92,7 +90,6 @@ const Dashboard = () => {
       
       setWinRate({ 
         value: parseFloat(calculatedWinRate.toFixed(1)), 
-        // Calculate actual change from previous value if available
         change: prevWinRate ? parseFloat((calculatedWinRate - prevWinRate).toFixed(1)) : 0
       });
       
@@ -113,7 +110,7 @@ const Dashboard = () => {
       
       setTradingStyle(detectedTradingStyle);
       
-      console.log("Updated metrics based on uploaded data:", {
+      console.log("Updated metrics:", {
         winRate: calculatedWinRate,
         profit: calculatedProfit,
         riskReward: calculatedRiskReward,
@@ -141,7 +138,6 @@ const Dashboard = () => {
       return;
     }
     
-    // Process the CSV file
     const reader = new FileReader();
     reader.onload = (event) => {
       const csvData = event.target?.result as string;
@@ -157,11 +153,9 @@ const Dashboard = () => {
         return;
       }
       
-      // Store the complete dataset
       setRawTradeData(parsedData);
       setHasUploadedData(true);
       
-      // Apply plan limits at upload time
       const tradeLimit = TRADE_LIMITS[userPlan];
       
       if (parsedData.length > tradeLimit) {
@@ -179,12 +173,9 @@ const Dashboard = () => {
     };
     
     reader.readAsText(file);
-    
-    // Reset the file input
     e.target.value = '';
   };
 
-  // Calculate total trades and capped status for UI
   const totalTrades = rawTradeData.length;
   const displayedTrades = tradeData.length;
   const isCapped = totalTrades > displayedTrades;
@@ -192,7 +183,6 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background text-foreground p-6">
       <div className="max-w-[1400px] mx-auto">
-        {/* Dashboard Header */}
         <DashboardHeader 
           settingsOpen={settingsOpen}
           toggleSettings={toggleSettings}
@@ -200,12 +190,10 @@ const Dashboard = () => {
           userPlan={userPlan}
         />
         
-        {/* Dashboard Settings */}
         {settingsOpen && (
           <DashboardSettings userPlan={userPlan} />
         )}
         
-        {/* Display plan limits info if data is capped */}
         {isCapped && hasUploadedData && (
           <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-md">
             <p className="text-sm">
@@ -218,10 +206,10 @@ const Dashboard = () => {
           </div>
         )}
         
-        {/* Key metrics */}
         <KeyMetrics 
+          tradeData={tradeData} // Added
           tradingStyle={tradingStyle} 
-          winRate={`${winRate.value}%`} 
+          winRate={`${winRate.value}%`} // Fallback
           winRateChange={`${winRate.change}%`}
           totalProfit={`$${totalProfit.value.toLocaleString()}`} 
           totalProfitChange={`${totalProfit.change}%`}
@@ -231,17 +219,14 @@ const Dashboard = () => {
           avgDrawdownChange={`${avgDrawdown.change}%`}
         />
         
-        {/* Charts row */}
         <PerformanceCharts tradeData={tradeData} hasData={hasUploadedData} />
         
-        {/* Analysis section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <TradingPsychology winRate={winRate.value} totalProfit={totalProfit.value} />
           <TopTradingHours tradeData={tradeData} hasData={hasUploadedData} />
           <CommunityBenchmark winRate={winRate.value} riskReward={riskReward.value} />
         </div>
 
-        {/* Display uploaded CSV data */}
         <UploadedTradeData 
           tradeData={tradeData}
           hasUploadedData={hasUploadedData}
@@ -250,10 +235,8 @@ const Dashboard = () => {
           userPlan={userPlan}
         />
         
-        {/* Recent Trades section */}
         <RecentTrades tradeData={tradeData} hasData={hasUploadedData} />
 
-        {/* AI Insights */}
         <AIInsights 
           userPlan={userPlan} 
           tradingStyle={tradingStyle} 
