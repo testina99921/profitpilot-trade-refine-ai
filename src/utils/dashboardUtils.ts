@@ -62,7 +62,7 @@ export const parseCSV = (text: string) => {
   const parsedData = lines.slice(1)
     .map(line => {
       const values = line.split(delimiter);
-      const entry = {};
+      const entry: Record<string, string> = {}; // Define entry as a Record<string, string> to allow any string keys
       
       headers.forEach((header, index) => {
         if (index < values.length) {
@@ -79,16 +79,16 @@ export const parseCSV = (text: string) => {
   
   // Process the data further to clean up and restructure if needed
   return parsedData.map(entry => {
-    const processedEntry = {...entry};
+    const processedEntry: Record<string, string> = {...entry};
     
     // Check if we have a comma-separated symbol format (common in some exchanges)
-    if (processedEntry.Symbol && processedEntry.Symbol.includes(',')) {
-      const parts = processedEntry.Symbol.split(',');
-      processedEntry.Symbol = parts[0]; // Keep only the ticker part
+    if (processedEntry['Symbol'] && processedEntry['Symbol'].includes(',')) {
+      const parts = processedEntry['Symbol'].split(',');
+      processedEntry['Symbol'] = parts[0]; // Keep only the ticker part
       
       // If we have side information in the symbol field, extract it
-      if (parts.length > 1 && !processedEntry.Side) {
-        processedEntry.Side = parts[1];
+      if (parts.length > 1 && !processedEntry['Side']) {
+        processedEntry['Side'] = parts[1];
       }
     }
     
