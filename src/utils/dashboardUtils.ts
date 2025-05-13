@@ -74,14 +74,43 @@ export const parseCSV = (text: string) => {
     })
     .filter(entry => {
       // Filter out empty entries or header repeats
-      return Object.values(entry).some(val => val !== '' && val !== 'Symbol Type' && val !== 'Exit Price');
+      const hasContent = Object.values(entry).some(val => val !== '');
+      const isNotHeader = Object.keys(entry).some(key => 
+        key !== 'Symbol Type' && 
+        key !== 'Exit Price' && 
+        key !== 'Contract' &&
+        key !== 'Direction' &&
+        key !== 'Quantity'
+      );
+      return hasContent && isNotHeader;
     });
   
-  // Process the data further to clean up and restructure if needed
+  // Clean up and standardize column names
   return parsedData.map(entry => {
     const processedEntry: Record<string, string> = {...entry};
     
-    // Check if we have a comma-separated symbol format (common in some exchanges)
+    // Handle Contract/Symbol field
+    if ('Contract' in processedEntry && !('Symbol' in processedEntry)) {
+      processedEntry['Symbol'] = processedEntry['Contract'];
+    } else if ('Symbol' in processedEntry && !('Contract' in processedEntry)) {
+      processedEntry['Contract'] = processedEntry['Symbol'];
+    }
+    
+    // Handle Direction/Side field
+    if ('Direction' in processedEntry && !('Side' in processedEntry)) {
+      processedEntry['Side'] = processedEntry['Direction'];
+    } else if ('Side' in processedEntry && !('Direction' in processedEntry)) {
+      processedEntry['Direction'] = processedEntry['Side'];
+    }
+    
+    // Handle Quantity/Size field
+    if ('Quantity' in processedEntry && !('Size' in processedEntry)) {
+      processedEntry['Size'] = processedEntry['Quantity'];
+    } else if ('Size' in processedEntry && !('Quantity' in processedEntry)) {
+      processedEntry['Quantity'] = processedEntry['Size'];
+    }
+    
+    // Clean up symbol format if it contains commas
     if (processedEntry['Symbol'] && processedEntry['Symbol'].includes(',')) {
       const parts = processedEntry['Symbol'].split(',');
       processedEntry['Symbol'] = parts[0]; // Keep only the ticker part
@@ -116,6 +145,9 @@ export const extractCleanSymbol = (symbolText: string): string => {
       break;
     }
   }
+  
+  // Make it more readable for UI display
+  if (cleaned === 'AR') return 'AR';
   
   return cleaned || 'Unknown';
 };

@@ -45,9 +45,12 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
   
   // Choose the most important columns to display if there are too many
   const getDisplayColumns = () => {
+    // Based on provided data sample, prioritize these columns in this order
     const priorityKeys = [
-      'Symbol', 'Entry Price', 'Exit Price', 'Closed P&L', 
-      'Trade Time(UTC)', 'Create Time', 'Side', 'Size', 'Contracts'
+      'Contract', 'Direction', 'Quantity', 'Entry Price', 'Exit Price', 'Closed P&L',
+      'Trade Time (UTC+0)', 'Create Time', 'Symbol Type', 'Exit Type',
+      // Fallbacks for other CSV formats
+      'Symbol', 'Side', 'Size', 'Contracts'
     ];
     
     // If we have 6 or fewer columns, show all of them
@@ -58,15 +61,17 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
     
     // First add any priority keys that exist
     for (const key of priorityKeys) {
-      if (allKeys.includes(key)) {
+      if (allKeys.includes(key) && selectedKeys.length < 6) {
         selectedKeys.push(key);
       }
     }
     
     // If we still need more keys to get to 6, add others
-    for (const key of allKeys) {
-      if (!selectedKeys.includes(key) && selectedKeys.length < 6) {
-        selectedKeys.push(key);
+    if (selectedKeys.length < 6) {
+      for (const key of allKeys) {
+        if (!selectedKeys.includes(key) && selectedKeys.length < 6) {
+          selectedKeys.push(key);
+        }
       }
     }
     
@@ -79,13 +84,13 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
   const formatCellValue = (key: string, value: string) => {
     if (!value) return '';
     
-    // Special handling for Symbol column
-    if (key === 'Symbol') {
+    // Special handling for Symbol or Contract column
+    if (key === 'Symbol' || key === 'Contract') {
       return extractCleanSymbol(value);
     }
     
-    // Handle other columns that might need formatting
-    if (key.toLowerCase().includes('price') || key.toLowerCase().includes('p&l')) {
+    // Handle price columns
+    if (key.toLowerCase().includes('price') || key === 'Closed P&L' || key.toLowerCase().includes('p&l')) {
       // Format as currency if it's a number
       const num = parseFloat(value.replace(/[^0-9.-]/g, ''));
       if (!isNaN(num)) {
@@ -94,6 +99,24 @@ const UploadedTradeData: React.FC<UploadedTradeDataProps> = ({
           currency: 'USD',
           minimumFractionDigits: 2
         }).format(num);
+      }
+    }
+    
+    // Handle date columns
+    if (key.toLowerCase().includes('time') || key.toLowerCase().includes('date')) {
+      try {
+        const date = new Date(value);
+        if (!isNaN(date.getTime())) {
+          return new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          }).format(date);
+        }
+      } catch (e) {
+        // If date parsing fails, return the original value
       }
     }
     
