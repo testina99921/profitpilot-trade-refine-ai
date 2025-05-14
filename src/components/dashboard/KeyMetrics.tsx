@@ -22,13 +22,13 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
   tradeData = [],
   tradingStyle,
   winRate: propWinRate = '0%',
-  winRateChange = '0%',
+  winRateChange: propWinRateChange = '0%',
   totalProfit: propTotalProfit = '0 USDT',
-  totalProfitChange = '0%',
+  totalProfitChange: propTotalProfitChange = '0%',
   riskReward: propRiskReward = 'Undefined',
-  riskRewardChange = '0',
+  riskRewardChange: propRiskRewardChange = '0',
   avgDrawdown: propAvgDrawdown = '0%',
-  avgDrawdownChange = '0%',
+  avgDrawdownChange: propAvgDrawdownChange = '0%',
 }) => {
   const calculateMetrics = () => {
     console.log('KeyMetrics: tradeData received:', tradeData);
@@ -38,13 +38,13 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
       console.log('KeyMetrics: No trade data, using prop defaults');
       return {
         winRate: propWinRate,
-        winRateChange,
+        winRateChange: propWinRateChange,
         totalProfit: propTotalProfit,
-        totalProfitChange,
+        totalProfitChange: propTotalProfitChange,
         riskReward: propRiskReward,
-        riskRewardChange,
+        riskRewardChange: propRiskRewardChange,
         avgDrawdown: propAvgDrawdown,
-        avgDrawdownChange,
+        avgDrawdownChange: propAvgDrawdownChange,
       };
     }
 
@@ -61,13 +61,13 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
       console.log('KeyMetrics: Profit key not found. Available keys:', Object.keys(tradeData[0]));
       return {
         winRate: propWinRate,
-        winRateChange,
+        winRateChange: propWinRateChange,
         totalProfit: propTotalProfit,
-        totalProfitChange,
+        totalProfitChange: propTotalProfitChange,
         riskReward: propRiskReward,
-        riskRewardChange,
+        riskRewardChange: propRiskRewardChange,
         avgDrawdown: propAvgDrawdown,
-        avgDrawdownChange,
+        avgDrawdownChange: propAvgDrawdownChange,
       };
     }
 
@@ -80,14 +80,14 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
       return value > 0;
     });
     const losses = tradeData.filter(t => extractNumericValue(t[profitKey]) <= 0);
-    const winRate = tradeData.length ? (wins.length / tradeData.length) * 100 : 0;
-    const totalProfit = tradeData.reduce((sum, t) => {
+    const winRateValue = tradeData.length ? (wins.length / tradeData.length) * 100 : 0;
+    const totalProfitValue = tradeData.reduce((sum, t) => {
       const value = extractNumericValue(t[profitKey]);
       return sum + (isNaN(value) ? 0 : value);
     }, 0);
     
     // Check if losses.length is 0 to avoid division by zero
-    const riskReward = (wins.length && losses.length) ? 
+    const riskRewardValue = (wins.length && losses.length) ? 
       `1:${(Math.abs(losses.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / losses.length) / 
             (wins.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / wins.length)).toFixed(2)}` : 
       'Undefined';
@@ -104,14 +104,14 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
     const riskRewardChangeCalc = '0';
     const avgDrawdownChangeCalc = '0%';
 
-    console.log('KeyMetrics: Calculated:', { winRate, totalProfit, riskReward, drawdown });
+    console.log('KeyMetrics: Calculated:', { winRateValue, totalProfitValue, riskRewardValue, drawdown });
 
     return {
-      winRate: `${winRate.toFixed(2)}%`,
+      winRate: `${winRateValue.toFixed(2)}%`,
       winRateChange: winRateChangeCalc,
-      totalProfit: `${totalProfit < 0 ? '-' : ''}$${Math.abs(totalProfit).toFixed(2)}`,
+      totalProfit: `${totalProfitValue < 0 ? '-' : ''}$${Math.abs(totalProfitValue).toFixed(2)}`,
       totalProfitChange: totalProfitChangeCalc,
-      riskReward,
+      riskReward: riskRewardValue,
       riskRewardChange: riskRewardChangeCalc,
       avgDrawdown: `${drawdown.toFixed(2)}%`,
       avgDrawdownChange: avgDrawdownChangeCalc,
