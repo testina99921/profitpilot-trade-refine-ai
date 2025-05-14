@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { getAvailableDateRanges } from '@/utils/dashboardUtils';
 import { useNavigate } from 'react-router-dom';
 import { UserPlan } from '@/types/dashboard';
+import { toast } from '@/components/ui/use-toast';
 
 interface DashboardSettingsProps {
   userPlan: UserPlan;
@@ -12,6 +13,15 @@ interface DashboardSettingsProps {
 
 const DashboardSettings: React.FC<DashboardSettingsProps> = ({ userPlan }) => {
   const navigate = useNavigate();
+  
+  const handleUpgrade = () => {
+    // Navigate to pricing with current plan in query params
+    navigate(`/pricing?from=${userPlan}`);
+    toast({
+      title: "Plan upgrade",
+      description: "Viewing available upgrade options",
+    });
+  };
   
   return (
     <Card className="mb-6 bg-card/50 backdrop-blur-sm border-purple-900/20">
@@ -30,7 +40,7 @@ const DashboardSettings: React.FC<DashboardSettingsProps> = ({ userPlan }) => {
                 <Button 
                   variant="link" 
                   className="h-auto p-0 text-xs text-purple-400"
-                  onClick={() => navigate('/pricing')}
+                  onClick={handleUpgrade}
                 >
                   Upgrade your plan
                 </Button> for more historical data
