@@ -3,19 +3,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { createClient } from '@supabase/supabase-js';
 import { ArrowLeft } from 'lucide-react';
+import { supabase } from "@/integrations/supabase/client";
 
 interface StripeCheckoutProps {
   planName: string;
   planPrice: string;
   returnToPlans: () => void;
 }
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const StripeCheckout: React.FC<StripeCheckoutProps> = ({ planName, planPrice, returnToPlans }) => {
   const [isLoading, setIsLoading] = useState(false);
