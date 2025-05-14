@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BarChart3, DollarSign, TrendingDown, TrendingUp, Users } from 'lucide-react';
 import MetricCard from './MetricCard';
@@ -32,7 +33,8 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
   const calculateMetrics = () => {
     console.log('KeyMetrics: tradeData received:', tradeData);
 
-    if (!tradeData.length) {
+    // Check if tradeData is empty or undefined
+    if (!tradeData || !tradeData.length) {
       console.log('KeyMetrics: No trade data, using prop defaults');
       return {
         winRate: propWinRate,
@@ -46,6 +48,7 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
       };
     }
 
+    // Now we can safely access tradeData[0]
     // Search for profit key, prioritizing 'Closed P&L'
     const profitKey = Object.keys(tradeData[0]).find(k => 
       k === 'Closed P&L' || 
@@ -53,6 +56,7 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
       k.toLowerCase().includes('pnl') || 
       k.toLowerCase().includes('profit')
     );
+    
     if (!profitKey) {
       console.log('KeyMetrics: Profit key not found. Available keys:', Object.keys(tradeData[0]));
       return {
@@ -81,10 +85,13 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({
       const value = extractNumericValue(t[profitKey]);
       return sum + (isNaN(value) ? 0 : value);
     }, 0);
-    const riskReward = wins.length ? 
+    
+    // Check if losses.length is 0 to avoid division by zero
+    const riskReward = (wins.length && losses.length) ? 
       `1:${(Math.abs(losses.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / losses.length) / 
             (wins.reduce((sum, t) => sum + extractNumericValue(t[profitKey]), 0) / wins.length)).toFixed(2)}` : 
       'Undefined';
+      
     const startingBalance = 1000; // Adjust if known
     const cumulativePnl = tradeData.reduce((acc, t) => {
       const profit = extractNumericValue(t[profitKey]);
