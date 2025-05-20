@@ -1,12 +1,18 @@
-
+```tsx
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TradeDataEntry } from '@/types/dashboard';
+import { Input } from "@/components/ui/input";
+import { TradeDataEntry, UserPlan } from '@/types/dashboard';
 import { extractCleanSymbol, extractNumericValue } from '@/utils/dashboardUtils';
+import { isFeatureAvailable } from '@/utils/dashboardUtils';
+import { cn } from '@/lib/utils';
 
 interface RecentTradesProps {
   tradeData: TradeDataEntry[];
   hasData: boolean;
+  userPlan: UserPlan;
+  tradeNotes: { [orderNo: string]: string };
+  handleTradeNoteChange: (orderNo: string, note: string) => void;
 }
 
 interface FormattedTrade {
@@ -15,65 +21,67 @@ interface FormattedTrade {
   exit: string;
   pnl: string;
   status: 'Win' | 'Loss';
+  orderNo: string;
 }
 
-const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
+const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData, userPlan, tradeNotes, handleTradeNoteChange }) => {
+  // Function to find Order No key
+  const findOrderNoKey = (sampleTrade: TradeDataEntry): string | null => {
+    const possibleKeys = ['Order No', 'Order ID', 'ID', 'Trade ID'];
+    for (const key of possibleKeys) {
+      if (key in sampleTrade) return key;
+    }
+    for (const key of Object.keys(sampleTrade)) {
+      if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
+        return key;
+      }
+    }
+    return null;
+  };
+
   // Function to extract recent trades from trade data
   const getRecentTrades = (): FormattedTrade[] => {
     if (!hasData || !tradeData.length) {
       // Return demo data if no real data exists
       return [
-        { symbol: 'BTC', entry: '$64,320', exit: '$67,845', pnl: '+$1,762.50', status: 'Win' },
-        { symbol: 'ETH', entry: '$3,412.65', exit: '$3,208.32', pnl: '-$615.75', status: 'Loss' },
-        { symbol: 'SOL', entry: '$134.14', exit: '$155.78', pnl: '+$936.80', status: 'Win' },
-        { symbol: 'BNB', entry: '$578.22', exit: '$605.67', pnl: '+$472.50', status: 'Win' },
+        { symbol: 'BTC', entry: '$64,320', exit: '$67,845', pnl: '+$1,762.50', status: 'Win', orderNo: 'demo1' },
+        { symbol: 'ETH', entry: '$3,412.65', exit: '$3,208.32', pnl: '-$615.75', status: 'Loss', orderNo: 'demo2' },
+        { symbol: 'SOL', entry: '$134.14', exit: '$155.78', pnl: '+$936.80', status: 'Win', orderNo: 'demo3' },
+        { symbol: 'BNB', entry: '$578.22', exit: '$605.67', pnl: '+$472.50', status: 'Win', orderNo: 'demo4' },
       ];
     }
 
-    console.log("Processing recent trades from:", tradeData);
-
-    // Try to identify relevant columns
     const symbolKey = findSymbolKey(tradeData[0]);
     const entryKey = findEntryKey(tradeData[0]);
     const exitKey = findExitKey(tradeData[0]);
     const pnlKey = findPnlKey(tradeData[0]);
+    const orderNoKey = findOrderNoKey(tradeData[0]);
 
-    console.log(`Using keys: symbol=${symbolKey}, entry=${entryKey}, exit=${exitKey}, pnl=${pnlKey}`);
-
-    // Convert and format recent trades
     return tradeData.slice(0, 4).map(trade => {
-      // Get symbol in clean format
       const symbol = symbolKey ? extractCleanSymbol(String(trade[symbolKey])) : 'Unknown';
-      
-      // Get entry and exit prices
       const entryValue = entryKey ? extractNumericValue(trade[entryKey]) : NaN;
       const exitValue = exitKey ? extractNumericValue(trade[exitKey]) : NaN;
-      
-      // Get PNL value
-      const pnlValue = pnlKey ? extractNumericValue(trade[pnlKey]) : 0;
-      
-      // If no direct PNL value and we have entry/exit prices, calculate it
-      let calculatedPnl = pnlValue;
-      if ((isNaN(pnlValue) || pnlValue === 0) && !isNaN(entryValue) && !isNaN(exitValue)) {
+      let calculatedPnl = pnlKey ? extractNumericValue(trade[pnlKey]) : 0;
+      if ((isNaN(calculatedPnl) || calculatedPnl === 0) && !isNaN(entryValue) && !isNaN(exitValue)) {
         calculatedPnl = exitValue - entryValue;
       }
-      
-      // Format the values
       const formattedEntry = formatCurrency(entryValue);
       const formattedExit = formatCurrency(exitValue);
       const formattedPnl = formatCurrency(Math.abs(calculatedPnl));
       const pnlWithSign = calculatedPnl >= 0 ? `+${formattedPnl}` : `-${formattedPnl}`;
-      
+      const orderNo = orderNoKey ? String(trade[orderNoKey]) : `trade-${Math.random().toString(36).substring(2)}`;
+
       return {
         symbol,
         entry: formattedEntry,
         exit: formattedExit,
         pnl: pnlWithSign,
-        status: calculatedPnl >= 0 ? 'Win' : 'Loss'
+        status: calculatedPnl >= 0 ? 'Win' : 'Loss',
+        orderNo,
       };
     });
   };
-  
+
   // Helper function to format currency
   const formatCurrency = (value: number): string => {
     if (isNaN(value)) return 'N/A';
@@ -81,93 +89,73 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     });
   };
-  
+
   // Helper functions to find column keys
   const findSymbolKey = (sampleTrade: TradeDataEntry): string | null => {
     const possibleKeys = [
       'Symbol', 'Ticker', 'Instrument', 'Asset', 'Pair', 'Market',
-      'Symbol Type', 'symbol', 'ticker', 'instrument', 'asset', 'pair'
+      'Symbol Type', 'symbol', 'ticker', 'instrument', 'asset', 'pair', 'Contracts'
     ];
-    
-    // First try exact matches
     for (const key of possibleKeys) {
       if (key in sampleTrade) return key;
     }
-    
-    // Then try case-insensitive contains
     for (const key of Object.keys(sampleTrade)) {
       if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
         return key;
       }
     }
-    
     return null;
   };
-  
+
   const findEntryKey = (sampleTrade: TradeDataEntry): string | null => {
     const possibleKeys = [
       'Entry', 'Entry Price', 'Open', 'Open Price', 'Buy', 'Buy Price',
       'entry', 'entryprice', 'open', 'openprice'
     ];
-    
-    // First try exact matches
     for (const key of possibleKeys) {
       if (key in sampleTrade) return key;
     }
-    
-    // Then try case-insensitive contains
     for (const key of Object.keys(sampleTrade)) {
       if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
         return key;
       }
     }
-    
     return null;
   };
-  
+
   const findExitKey = (sampleTrade: TradeDataEntry): string | null => {
     const possibleKeys = [
       'Exit', 'Exit Price', 'Close', 'Close Price', 'Sell', 'Sell Price',
       'exit', 'exitprice', 'close', 'closeprice'
     ];
-    
-    // First try exact matches
     for (const key of possibleKeys) {
       if (key in sampleTrade) return key;
     }
-    
-    // Then try case-insensitive contains
     for (const key of Object.keys(sampleTrade)) {
       if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
         return key;
       }
     }
-    
     return null;
   };
-  
+
   const findPnlKey = (sampleTrade: TradeDataEntry): string | null => {
     const possibleKeys = [
       'PnL', 'P&L', 'P/L', 'Profit', 'Profit/Loss', 'GainLoss', 'Gain/Loss',
       'Net', 'Net Profit', 'Result', 'Return', 'Outcome', 'profit', 'pnl',
       'Closed P&L', 'Closed PnL', 'Realized PnL'
     ];
-    
-    // First try exact matches
     for (const key of possibleKeys) {
       if (key in sampleTrade) return key;
     }
-    
-    // Then try case-insensitive contains
     for (const key of Object.keys(sampleTrade)) {
       if (possibleKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
         return key;
       }
     }
-    
     return null;
   };
 
@@ -188,6 +176,14 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
                 <th className="text-left py-3 px-2">Exit</th>
                 <th className="text-left py-3 px-2">P/L</th>
                 <th className="text-left py-3 px-2">Status</th>
+                <th
+                  className={cn(
+                    'text-left py-3 px-2',
+                    !isFeatureAvailable('risk-patterns', userPlan) && 'filter blur-[2px]'
+                  )}
+                >
+                  Trade Note
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -200,15 +196,42 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
                     {trade.pnl}
                   </td>
                   <td className="py-3 px-2">
-                    <span 
+                    <span
                       className={`px-2 py-1 rounded-full ${
-                        trade.status === 'Win' 
-                          ? 'bg-green-500/20 text-green-500' 
+                        trade.status === 'Win'
+                          ? 'bg-green-500/20 text-green-500'
                           : 'bg-red-500/20 text-red-500'
                       } text-xs`}
                     >
                       {trade.status}
                     </span>
+                  </td>
+                  <td
+                    className={cn(
+                      'py-3 px-2',
+                      !isFeatureAvailable('risk-patterns', userPlan) && 'filter blur-[2px]'
+                    )}
+                  >
+                    {isFeatureAvailable('risk-patterns', userPlan) ? (
+                      <Input
+                        value={tradeNotes[trade.orderNo] || ''}
+                        onChange={(e) => handleTradeNoteChange(trade.orderNo, e.target.value)}
+                        placeholder="Enter trade rationale"
+                        className={cn('text-xs', !tradeNotes[trade.orderNo] && 'border-red-500')}
+                        disabled={trade.orderNo.startsWith('demo')}
+                      />
+                    ) : (
+                      <div className="relative">
+                        <Input
+                          placeholder="Enter trade rationale"
+                          className="text-xs opacity-0"
+                          disabled
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded">
+                          <span className="text-xs font-medium text-white">Pro Plan Feature</span>
+                        </div>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -221,3 +244,4 @@ const RecentTrades: React.FC<RecentTradesProps> = ({ tradeData, hasData }) => {
 };
 
 export default RecentTrades;
+```
