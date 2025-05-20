@@ -31,6 +31,7 @@ const StripeCheckout: React.FC<StripeCheckoutProps> = ({ planName, planPrice, re
       });
 
       if (error) {
+        console.error("Checkout error:", error);
         throw new Error(error.message);
       }
 

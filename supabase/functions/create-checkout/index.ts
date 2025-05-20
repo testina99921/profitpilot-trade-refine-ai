@@ -49,6 +49,8 @@ serve(async (req) => {
       throw new Error('Plan is required');
     }
 
+    console.log(`Creating checkout session for plan: ${plan}`);
+
     // Initialize Stripe
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
 
@@ -70,6 +72,7 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
+      console.log(`Found existing customer: ${customerId}`);
     } else {
       const newCustomer = await stripe.customers.create({
         email: user.email,
@@ -78,9 +81,13 @@ serve(async (req) => {
         },
       });
       customerId = newCustomer.id;
+      console.log(`Created new customer: ${customerId}`);
     }
 
     // Create a checkout session
+    const origin = req.headers.get('origin') || 'http://localhost:3000';
+    console.log(`Using origin: ${origin}`);
+    
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -91,11 +98,13 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/dashboard?checkout_success=true`,
-      cancel_url: `${req.headers.get('origin')}/pricing`,
+      success_url: `${origin}/dashboard?checkout_success=true`,
+      cancel_url: `${origin}/pricing`,
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
     });
+
+    console.log(`Checkout session created: ${session.id} with URL: ${session.url}`);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -29,27 +29,33 @@ const Pricing = () => {
   const location = useLocation();
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [showCheckout, setShowCheckout] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // In a real app, this would come from auth state
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // For now, assuming user is logged in
   
   // Extract the 'from' query parameter to determine which plan to highlight
   const queryParams = new URLSearchParams(location.search);
   const fromPlan = queryParams.get('from') as UserPlan || null;
-  const planToHighlight = fromPlan ? getRecommendedPlan(fromPlan) : queryParams.get('plan') || 'Pro';
+  const planParam = queryParams.get('plan') || null;
+  const planToHighlight = fromPlan ? getRecommendedPlan(fromPlan) : planParam || 'Pro';
   
   useEffect(() => {
-    // Set the highlighted plan on component mount
-    if (planToHighlight) {
-      const plan = plans.find(p => p.name.toLowerCase() === planToHighlight.toLowerCase());
+    // If plan is specified in URL, auto-select it
+    if (planParam) {
+      const plan = plans.find(p => p.name.toLowerCase() === planParam.toLowerCase());
       if (plan) {
-        // Just visually highlight it, don't set as selected yet
-        console.log(`Highlighting plan: ${planToHighlight}`);
+        setSelectedPlan(plan);
+        setShowCheckout(true);
       }
     }
-  }, [planToHighlight]);
+  }, [planParam]);
   
   const handleBackClick = () => {
     if (showCheckout) {
       setShowCheckout(false);
+      setSelectedPlan(null);
+      // Update URL without the plan parameter
+      const newParams = new URLSearchParams(location.search);
+      newParams.delete('plan');
+      navigate({ search: newParams.toString() });
     } else {
       navigate('/');
     }
@@ -65,13 +71,20 @@ const Pricing = () => {
       return;
     }
     
-    // Show checkout form
+    // Show checkout form and update URL
     setShowCheckout(true);
+    const newParams = new URLSearchParams(location.search);
+    newParams.set('plan', plan.name.toLowerCase());
+    navigate({ search: newParams.toString() });
   };
 
   const handleReturnToPlans = () => {
     setShowCheckout(false);
     setSelectedPlan(null);
+    // Update URL without the plan parameter
+    const newParams = new URLSearchParams(location.search);
+    newParams.delete('plan');
+    navigate({ search: newParams.toString() });
   };
 
   const plans = [
