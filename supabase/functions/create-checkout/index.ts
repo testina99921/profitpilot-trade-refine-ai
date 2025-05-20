@@ -14,37 +14,17 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Get the authorization header from the request
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: 'No authorization header' }), {
-      status: 401,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
   try {
+    console.log("Checkout function called");
+    
     // Get the Stripe secret key from environment variables
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeSecretKey) {
       throw new Error('Stripe secret key is not set in the environment');
     }
 
-    // Create Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-    // Get the current user from the authorization header
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-
-    if (userError || !user) {
-      throw new Error('Error getting user or user not found');
-    }
-
     // Parse the request body to get the plan
-    const { plan } = await req.json();
+    const { plan, demo_email } = await req.json();
     if (!plan) {
       throw new Error('Plan is required');
     }
@@ -67,17 +47,55 @@ serve(async (req) => {
       throw new Error(`Invalid plan: ${plan}`);
     }
 
-    // Find or create a customer
+    // Handle user identification - either use authenticated user or demo email
+    let email;
     let customerId;
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    
+    // Option 1: Try to get user from auth header
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader) {
+      try {
+        // Create Supabase client
+        const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        // Get the current user from the authorization header
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+        if (user && !userError) {
+          email = user.email;
+          console.log(`Using authenticated user email: ${email}`);
+        } else {
+          console.log("Auth token provided but user not found, will use demo email");
+        }
+      } catch (e) {
+        console.error("Error getting authenticated user:", e);
+      }
+    }
+    
+    // Option 2: Use demo email if provided and no authenticated user found
+    if (!email && demo_email) {
+      email = demo_email;
+      console.log(`Using demo email: ${email}`);
+    }
+    
+    // If we still don't have an email, throw an error
+    if (!email) {
+      throw new Error('No user email available');
+    }
+
+    // Find or create a customer
+    const customers = await stripe.customers.list({ email, limit: 1 });
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       console.log(`Found existing customer: ${customerId}`);
     } else {
       const newCustomer = await stripe.customers.create({
-        email: user.email,
+        email,
         metadata: {
-          user_id: user.id,
+          demo: demo_email ? "true" : "false"
         },
       });
       customerId = newCustomer.id;
