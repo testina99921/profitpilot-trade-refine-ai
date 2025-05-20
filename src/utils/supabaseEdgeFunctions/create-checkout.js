@@ -3,7 +3,8 @@
 // Note: This is a reference implementation - you'll need to deploy this to your Supabase project
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@12.4.0";
+import Stripe from "https://esm.sh/stripe@14.21.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,9 +51,9 @@ serve(async (req) => {
 
     // Get plan price ID based on plan name
     const priceIds = {
-      pro: "price_pro_monthly", // Replace with your actual Stripe price IDs
-      advanced: "price_advanced_monthly",
-      elite: "price_elite_monthly",
+      pro: "price_1M7NvuGH3DDpzNyNDIJPS3tW", // Pro plan - $30/month
+      advanced: "price_1M7NwOGH3DDpzNyN9BwIBmWA", // Advanced plan - $75/month
+      elite: "price_1M7NwpGH3DDpzNyNDrQDOYzH"  // Elite plan - $200/month
     };
     
     const priceId = priceIds[plan] || priceIds.pro;

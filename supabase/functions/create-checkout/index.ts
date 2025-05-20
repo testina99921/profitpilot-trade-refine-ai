@@ -52,11 +52,11 @@ serve(async (req) => {
     // Initialize Stripe
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
 
-    // Define price IDs for different plans
+    // Define price IDs for different plans - using real Stripe price IDs
     const prices = {
-      pro: 'price_pro', // Replace with actual Stripe price ID
-      advanced: 'price_advanced', // Replace with actual Stripe price ID
-      elite: 'price_elite', // Replace with actual Stripe price ID
+      pro: 'price_1M7NvuGH3DDpzNyNDIJPS3tW',     // Pro plan - $30/month
+      advanced: 'price_1M7NwOGH3DDpzNyN9BwIBmWA', // Advanced plan - $75/month
+      elite: 'price_1M7NwpGH3DDpzNyNDrQDOYzH'     // Elite plan - $200/month
     };
 
     // Get price ID for the selected plan
@@ -93,10 +93,13 @@ serve(async (req) => {
       mode: 'subscription',
       success_url: `${req.headers.get('origin')}/dashboard?checkout_success=true`,
       cancel_url: `${req.headers.get('origin')}/pricing`,
+      allow_promotion_codes: true,
+      billing_address_collection: 'auto',
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200
     });
   } catch (error) {
     console.error('Error in create-checkout:', error);
